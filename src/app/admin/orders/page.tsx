@@ -1,4 +1,5 @@
 "use client";
+import { log } from "node:console";
 import { useEffect, useState } from "react";
 
 // const ADMIN_KEY = "haldiram_admin_123"; // must match .env
@@ -30,9 +31,10 @@ export default function OrdersPage() {
           //   },
           // }
         );
-
+        
+        
         const data = await res.json();
-
+console.log("Res order",data);
         if (Array.isArray(data)) {
           setOrders(data);
         } else if (Array.isArray(data.orders)) {
@@ -99,71 +101,84 @@ export default function OrdersPage() {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
+ return (
+  <div className="space-y-8">
+    {/* Header */}
+    <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Admin Orders
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          Orders Management
         </h1>
-        <p className="text-sm text-gray-500">
-          Manage customer orders and delivery status
+        <p className="mt-1 text-sm text-gray-500">
+          View, track and update customer orders
         </p>
       </div>
+    </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="rounded-lg bg-white p-6 text-center text-gray-400">
-          Loading orders...
-        </div>
-      )}
+    {/* Loading */}
+    {loading && (
+      <div className="rounded-xl bg-white p-8 text-center shadow-sm">
+        <p className="text-sm font-medium text-gray-400">
+          Loading orders…
+        </p>
+      </div>
+    )}
 
-      {/* No Orders */}
-      {!loading && orders.length === 0 && (
-        <div className="rounded-lg bg-white p-6 text-center text-gray-400">
-          No orders found
-        </div>
-      )}
+    {/* No Orders */}
+    {!loading && orders.length === 0 && (
+      <div className="rounded-xl bg-white p-8 text-center shadow-sm">
+        <p className="text-sm font-medium text-gray-400">
+          No orders available
+        </p>
+      </div>
+    )}
 
-      {/* Orders List */}
-      {!loading &&
-        orders.map(order => (
-          <div
-            key={order._id}
-            className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 space-y-4"
-          >
+    {/* Orders List */}
+    {!loading &&
+      orders.map(order => (
+        <div
+          key={order._id}
+          className="rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+        >
+          <div className="p-6 space-y-6">
             {/* Order Header */}
-            <div className="flex flex-col md:flex-row md:justify-between gap-4">
-              <div>
-                <p className="text-xs text-gray-500">
-                  Order ID
-                </p>
-                <p className="font-mono text-sm text-gray-800">
-                  {order._id}
-                </p>
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    Order ID
+                  </p>
+                  <p className="font-mono text-sm font-medium text-gray-800">
+                    {order._id}
+                  </p>
+                </div>
 
-                <p className="mt-2 text-sm text-gray-700">
-                  Customer:
+                <div className="text-sm text-gray-700">
+                  <span className="font-semibold text-gray-900">
+                    Customer:
+                  </span>
                   <span className="ml-1 font-medium">
                     {order.user?.name || "N/A"}
                   </span>
-                </p>
+                </div>
 
-                <p className="text-sm text-gray-700">
-                  Phone:
+                <div className="text-sm text-gray-700">
+                  <span className="font-semibold text-gray-900">
+                    Phone:
+                  </span>
                   <span className="ml-1">
                     {order.user?.phone || "N/A"}
                   </span>
-                </p>
+                </div>
               </div>
 
-              <div className="text-right">
-                <p className="text-xl font-bold text-gray-900">
+              <div className="text-right space-y-2">
+                <p className="text-2xl font-extrabold text-gray-900">
                   ₹{order.totalAmount}
                 </p>
 
                 <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusBadge(
+                  className={`inline-flex items-center rounded-full px-4 py-1 text-xs font-semibold capitalize ${statusBadge(
                     order.status
                   )}`}
                 >
@@ -173,23 +188,27 @@ export default function OrdersPage() {
             </div>
 
             {/* Products */}
-            <div className="rounded-lg border bg-gray-50 p-4 space-y-3">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4">
+              <p className="text-sm font-semibold text-gray-700">
+                Order Items
+              </p>
+
               {order.items?.map((item: any, idx: number) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-4"
+                  className="flex items-center gap-4 rounded-lg bg-white p-3 shadow-sm"
                 >
                   <img
                     src={
                       item.product?.images?.[0] ||
                       "/placeholder.png"
                     }
-                    className="h-14 w-14 rounded border object-cover"
+                    className="h-14 w-14 rounded-md border object-cover"
                     alt={item.product?.name}
                   />
 
-                  <div>
-                    <p className="font-medium text-gray-800">
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">
                       {item.product?.name}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -201,7 +220,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Status Control */}
-            <div className="flex justify-end">
+            <div className="flex items-center justify-end gap-4">
               <select
                 value={order.status}
                 disabled={
@@ -211,25 +230,27 @@ export default function OrdersPage() {
                 onChange={e =>
                   updateStatus(order._id, e.target.value)
                 }
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700
                            focus:outline-none focus:ring-2 focus:ring-blue-500
-                           disabled:bg-gray-100"
+                           disabled:cursor-not-allowed disabled:bg-gray-100"
               >
                 {STATUS_OPTIONS.map(s => (
                   <option key={s} value={s}>
-                    {s}
+                    {s.toUpperCase()}
                   </option>
                 ))}
               </select>
 
               {updatingId === order._id && (
-                <span className="ml-3 text-sm text-gray-400">
+                <span className="text-sm font-medium text-gray-400">
                   Updating…
                 </span>
               )}
             </div>
           </div>
-        ))}
-    </div>
-  );
+        </div>
+      ))}
+  </div>
+);
+
 }

@@ -1,6 +1,5 @@
 import mongoose, { Document, Model } from "mongoose";
-import bcrypt from "bcrypt";
-
+import bcrypt from "bcryptjs"; // ✅ NOT bcrypt
 
 export interface IAddress {
   street?: string;
@@ -40,15 +39,19 @@ const UserSchema = new mongoose.Schema<IUser>(
   { timestamps: true }
 );
 
-// 🔐 Hash password before save
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+// 🔐 Hash password before save (CORRECT)
+UserSchema.pre("save", async function () {
+  const user = this as IUser;
+
+  if (!user.isModified("password")) return;
+
+  user.password = await bcrypt.hash(user.password, 10);
 });
 
-// 🔑 Compare password method
-UserSchema.methods.comparePassword = function (password: string) {
+// 🔑 Compare password
+UserSchema.methods.comparePassword = function (
+  password: string
+): Promise<boolean> {
   return bcrypt.compare(password, this.password);
 };
 

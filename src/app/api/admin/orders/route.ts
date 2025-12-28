@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-
+// import User from "../../../../../lib/models/User";
 import { connectDB } from "../../../../../lib/mongoose";
 import Order from "../../../../../lib/models/Order";
+import { ImPointUp } from "react-icons/im";
 // import { verifyAdmin } from "../../../../../lib/adminAuth";
+import mongoose from "mongoose";
 
 export async function GET(req: NextRequest) {
   // if (!verifyAdmin(req)) {
@@ -13,11 +15,17 @@ export async function GET(req: NextRequest) {
   // }
 
   await connectDB();
+console.log("Registered models:", mongoose.modelNames());
+
 
   const orders = await Order.find()
-    // .populate("user", "name phone")
+      .populate({
+      path: "user",
+      select: "name  email phone address", // 
+    })
     .populate("items.product", "name images")
     .sort({ createdAt: -1 });
+console.log("ordrs",orders);
 
   return NextResponse.json(orders);
 }
