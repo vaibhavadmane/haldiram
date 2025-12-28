@@ -101,23 +101,23 @@ console.log("Res order",data);
     }
   };
 
- return (
-  <div className="space-y-8">
-    {/* Header */}
+return (
+  <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
+    {/* Page Header */}
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-3xl font-bold text-gray-900">
           Orders Management
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          View, track and update customer orders
+          View, manage, and update customer orders
         </p>
       </div>
     </div>
 
     {/* Loading */}
     {loading && (
-      <div className="rounded-xl bg-white p-8 text-center shadow-sm">
+      <div className="rounded-xl bg-white p-10 text-center shadow">
         <p className="text-sm font-medium text-gray-400">
           Loading orders…
         </p>
@@ -126,29 +126,29 @@ console.log("Res order",data);
 
     {/* No Orders */}
     {!loading && orders.length === 0 && (
-      <div className="rounded-xl bg-white p-8 text-center shadow-sm">
+      <div className="rounded-xl bg-white p-10 text-center shadow">
         <p className="text-sm font-medium text-gray-400">
-          No orders available
+          No orders found
         </p>
       </div>
     )}
 
-    {/* Orders List */}
+    {/* Orders */}
     {!loading &&
       orders.map(order => (
         <div
           key={order._id}
           className="rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
         >
-          <div className="p-6 space-y-6">
-            {/* Order Header */}
+          <div className="space-y-6 p-6">
+            {/* Header */}
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="space-y-2">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                     Order ID
                   </p>
-                  <p className="font-mono text-sm font-medium text-gray-800">
+                  <p className="font-mono text-sm text-gray-800">
                     {order._id}
                   </p>
                 </div>
@@ -156,19 +156,15 @@ console.log("Res order",data);
                 <div className="text-sm text-gray-700">
                   <span className="font-semibold text-gray-900">
                     Customer:
-                  </span>
-                  <span className="ml-1 font-medium">
-                    {order.user?.name || "N/A"}
-                  </span>
+                  </span>{" "}
+                  {order.user?.name || "N/A"}
                 </div>
 
                 <div className="text-sm text-gray-700">
                   <span className="font-semibold text-gray-900">
                     Phone:
-                  </span>
-                  <span className="ml-1">
-                    {order.user?.phone || "N/A"}
-                  </span>
+                  </span>{" "}
+                  {order.user?.phone || "N/A"}
                 </div>
               </div>
 
@@ -178,7 +174,7 @@ console.log("Res order",data);
                 </p>
 
                 <span
-                  className={`inline-flex items-center rounded-full px-4 py-1 text-xs font-semibold capitalize ${statusBadge(
+                  className={`inline-flex rounded-full px-4 py-1 text-xs font-semibold capitalize ${statusBadge(
                     order.status
                   )}`}
                 >
@@ -187,40 +183,74 @@ console.log("Res order",data);
               </div>
             </div>
 
-            {/* Products */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4">
-              <p className="text-sm font-semibold text-gray-700">
+            {/* Shipping Address */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="mb-3 text-sm font-semibold text-gray-800">
+                Shipping Address
+              </p>
+
+              <div className="space-y-1 text-sm text-gray-700">
+                <p>
+                  <span className="font-semibold text-gray-900">
+                    Name:
+                  </span>{" "}
+                  {order.shippingAddress?.name || "N/A"}
+                </p>
+
+                <p>
+                  <span className="font-semibold text-gray-900">
+                    Phone:
+                  </span>{" "}
+                  {order.shippingAddress?.phone || "N/A"}
+                </p>
+
+                <p>
+                  <span className="font-semibold text-gray-900">
+                    Address:
+                  </span>{" "}
+                  {order.shippingAddress
+                    ? `${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}`
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+
+            {/* Order Items */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="mb-3 text-sm font-semibold text-gray-800">
                 Order Items
               </p>
 
-              {order.items?.map((item: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-4 rounded-lg bg-white p-3 shadow-sm"
-                >
-                  <img
-                    src={
-                      item.product?.images?.[0] ||
-                      "/placeholder.png"
-                    }
-                    className="h-14 w-14 rounded-md border object-cover"
-                    alt={item.product?.name}
-                  />
+              <div className="space-y-3">
+                {order.items?.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-4 rounded-lg bg-white p-3 shadow-sm"
+                  >
+                    <img
+                      src={
+                        item.product?.images?.[0] ||
+                        "/placeholder.png"
+                      }
+                      className="h-14 w-14 rounded-md border object-cover"
+                      alt={item.product?.name}
+                    />
 
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">
-                      {item.product?.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      ₹{item.price} × {item.quantity}
-                    </p>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">
+                        {item.product?.name}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        ₹{item.price} × {item.quantity}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* Status Control */}
-            <div className="flex items-center justify-end gap-4">
+            {/* Status Update */}
+            <div className="flex items-center justify-end gap-4 border-t pt-4">
               <select
                 value={order.status}
                 disabled={
@@ -252,5 +282,8 @@ console.log("Res order",data);
       ))}
   </div>
 );
+
+
+
 
 }

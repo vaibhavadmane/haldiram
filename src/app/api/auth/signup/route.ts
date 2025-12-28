@@ -2,34 +2,38 @@ import { NextResponse } from "next/server";
 import { connectDB } from "../../../../../lib/mongoose";
 import User from "../../../../../lib/models/User";
 
+
 export async function POST(req: Request) {
-  await connectDB();
+  try {
+    await connectDB();
+    const { name, email, password } = await req.json();
 
-  const { name, email, password } = await req.json();
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { error: "All fields required" },
+        { status: 400 }
+      );
+    }
 
-  if (!name || !email || !password) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User already exists" },
+        { status: 400 }
+      );
+    }
+
+    const user = new User({ name, email, password });
+    await user.save();
+
     return NextResponse.json(
-      { error: "All fields required" },
-      { status: 400 }
+      { message: "Signup successful" },
+      { status: 201 }
+    );
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
     );
   }
-
-  const exists = await User.findOne({ email });
-  if (exists) {
-    return NextResponse.json(
-      { error: "User already exists" },
-      { status: 400 }
-    );
-  }
-
-  const user = await User.create({ name, email, password });
-
-  return NextResponse.json({
-    message: "Signup successful",
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    },
-  });
 }

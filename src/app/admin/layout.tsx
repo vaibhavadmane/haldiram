@@ -31,7 +31,13 @@ export default function AdminLayout({
               href="/admin/products"
               className="rounded-lg px-3 py-2 text-gray-300 hover:bg-gray-800 hover:text-white transition"
             >
-              Products
+             Add Products
+            </a>
+               <a
+              href="/admin/allproducts"
+              className="rounded-lg px-3 py-2 text-gray-300 hover:bg-gray-800 hover:text-white transition"
+            >
+             All Products
             </a>
             <a
               href="/admin/orders"
