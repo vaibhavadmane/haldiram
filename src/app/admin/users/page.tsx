@@ -1,9 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
+import { 
+  Users, ShoppingBag, Wallet, Search, Phone, Mail, MapPin, 
+  History, ArrowUpRight, TrendingUp, PackageCheck 
+} from "lucide-react";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/users/orders")
@@ -16,145 +21,150 @@ export default function UsersPage() {
   }, []);
 
   const initials = (name: string) =>
-    name
-      ?.split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .toUpperCase();
+    name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || "??";
+
+  const filteredUsers = users.filter(u => 
+    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Users & Orders Analytics
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Complete user details with order history and spending
-        </p>
-      </div>
+    <div className="min-h-screen bg-[#F1F4F9] p-3 md:p-10 font-sans antialiased">
+      <div className="mx-auto max-w-7xl">
+        
+        {/* HEADER & SEARCH */}
+        <div className="mb-8 md:mb-12 flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
+          <div className="text-center lg:text-left">
+            <h1 className="text-2xl md:text-4xl font-[900] text-slate-900 tracking-tight flex flex-col md:flex-row items-center gap-3 md:gap-4">
+              <div className="p-3 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-100 shrink-0">
+                <Users className="w-6 h-6 md:w-7 md:h-7 text-white" />
+              </div>
+              <span>Customer <span className="text-indigo-600">Intelligence</span></span>
+            </h1>
+            <p className="text-slate-500 font-medium mt-2 text-sm md:text-base">Analyze behavior and spending patterns.</p>
+          </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="rounded-xl bg-white p-10 text-center text-gray-400 shadow">
-          Loading users…
+          <div className="relative w-full lg:w-96">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input 
+              className="w-full bg-white border-none shadow-sm rounded-2xl py-3 md:py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-indigo-600 transition-all outline-none"
+              placeholder="Search customers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-      )}
 
-      {/* Users */}
-      {!loading &&
-        users.map((u) => (
-          <div
-            key={u.userId}
-            className="rounded-2xl border border-gray-200 bg-white shadow-sm"
-          >
-            <div className="space-y-6 p-6">
-              {/* User Header */}
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-sm font-bold text-gray-700">
-                    {initials(u.name)}
-                  </div>
-
-                  <div>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {u.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {u.email}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      📞 {u.phone || "N/A"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="rounded-lg bg-gray-50 px-4 py-3">
-                    <p className="text-xs text-gray-500">
-                      Orders
-                    </p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {u.totalOrders}
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg bg-gray-50 px-4 py-3">
-                    <p className="text-xs text-gray-500">
-                      Products
-                    </p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {u.totalProducts}
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg bg-gray-50 px-4 py-3">
-                    <p className="text-xs text-gray-500">
-                      Amount Spent
-                    </p>
-                    <p className="text-lg font-bold text-gray-900">
-                      ₹{u.totalAmountSpent}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <p className="mb-2 text-sm font-semibold text-gray-800">
-                  Address
-                </p>
-                <p className="text-sm text-gray-700">
-                  {u.address
-                    ? `${u.address.street}, ${u.address.city}, ${u.address.state} - ${u.address.pincode}`
-                    : "No address available"}
-                </p>
-              </div>
-
-              {/* Orders */}
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <p className="mb-3 text-sm font-semibold text-gray-800">
-                  Orders & Products
-                </p>
-
-                <div className="space-y-4">
-                  {u.orders.map((order: any) => (
-                    <div
-                      key={order.orderId}
-                      className="rounded-lg bg-white p-4 shadow-sm"
-                    >
-                      <div className="mb-2 flex items-center justify-between">
-                        <p className="text-sm font-semibold text-gray-900">
-                          Order ID: {order.orderId}
-                        </p>
-                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 capitalize">
-                          {order.status}
-                        </span>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-40">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <p className="mt-4 text-slate-400 font-black text-xs uppercase tracking-widest">Compiling Analytics</p>
+          </div>
+        ) : (
+          <div className="space-y-6 md:space-y-10">
+            {filteredUsers.map((u) => (
+              <div key={u.userId} className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-xl">
+                
+                {/* USER PROFILE HEADER */}
+                <div className="p-6 md:p-10 border-b border-slate-50 bg-slate-50/30">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 md:gap-6">
+                      <div className="flex h-16 w-16 md:h-20 md:w-20 shrink-0 items-center justify-center rounded-2xl md:rounded-[2rem] bg-indigo-600 text-xl md:text-2xl font-black text-white shadow-lg">
+                        {initials(u.name)}
                       </div>
-
-                      <p className="mb-2 text-sm text-gray-600">
-                        Total: ₹{order.totalAmount}
-                      </p>
-
-                      <div className="space-y-1">
-                        {order.items.map((item: any, idx: number) => (
-                          <p
-                            key={idx}
-                            className="text-sm text-gray-700"
-                          >
-                            • Product ID: {item.product} | Qty:{" "}
-                            {item.quantity} | ₹{item.price}
-                          </p>
-                        ))}
+                      <div className="min-w-0">
+                        <h2 className="text-xl md:text-2xl font-[900] text-slate-900 leading-tight truncate">{u.name}</h2>
+                        <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-2">
+                          <span className="flex items-center gap-1.5 text-[10px] md:text-xs font-bold text-slate-500"><Mail className="w-3 h-3" /> {u.email}</span>
+                          <span className="flex items-center gap-1.5 text-[10px] md:text-xs font-bold text-slate-500"><Phone className="w-3 h-3" /> {u.phone || "N/A"}</span>
+                        </div>
                       </div>
                     </div>
-                  ))}
+
+                    {/* KPI CARDS - Horizontal scroll on mobile */}
+                    <div className="flex overflow-x-auto pb-2 sm:pb-0 sm:grid sm:grid-cols-3 gap-3 md:gap-6 no-scrollbar">
+                      <KPICard label="Orders" value={u.totalOrders} icon={<ShoppingBag />} color="text-indigo-600" />
+                      <KPICard label="Items" value={u.totalProducts} icon={<PackageCheck />} color="text-emerald-600" />
+                      <KPICard label="Spent" value={`₹${u.totalAmountSpent}`} icon={<Wallet />} color="text-amber-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
+                  {/* ADDRESS NODE */}
+                  <div className="lg:col-span-4 space-y-6">
+                    <div>
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5" /> Residence
+                      </h3>
+                      <div className="p-5 md:p-6 rounded-2xl md:rounded-[2rem] bg-slate-50 border border-slate-100 text-xs md:text-sm font-bold text-slate-700 leading-relaxed shadow-inner">
+                        {u.address ? (
+                          <>
+                            <p>{u.address.street}</p>
+                            <p>{u.address.city}, {u.address.state}</p>
+                            <p className="mt-2 text-indigo-600 font-mono text-[10px]">{u.address.pincode}</p>
+                          </>
+                        ) : (
+                          <p className="text-slate-400 italic">No address on file</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="p-5 rounded-2xl md:rounded-[2rem] bg-indigo-50 border border-indigo-100 flex items-center justify-between">
+                      <div>
+                        <span className="text-[9px] font-black text-indigo-400 uppercase block mb-1">AOV Insight</span>
+                        <p className="text-xs font-bold text-indigo-900">₹{(u.totalAmountSpent / (u.totalOrders || 1)).toFixed(0)} Avg / Order</p>
+                      </div>
+                      <TrendingUp className="w-5 h-5 text-indigo-600 opacity-30" />
+                    </div>
+                  </div>
+
+                  {/* TRANSACTION REGISTRY */}
+                  <div className="lg:col-span-8">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <History className="w-3.5 h-3.5" /> History
+                    </h3>
+                    <div className="space-y-3 md:space-y-4">
+                      {u.orders.map((order: any) => (
+                        <div key={order.orderId} className="group/order relative rounded-2xl md:rounded-3xl border border-slate-100 p-4 md:p-5 hover:bg-slate-50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                             <div className="h-9 w-9 md:h-10 md:w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 font-mono text-[9px] font-bold shrink-0">
+                               #{order.orderId.slice(-4)}
+                             </div>
+                             <div className="min-w-0">
+                               <p className="text-xs md:text-sm font-black text-slate-800 truncate">Order {order.orderId}</p>
+                               <span className="text-[9px] font-bold text-indigo-600 uppercase">Status: {order.status}</span>
+                             </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between sm:justify-end gap-4 md:gap-8 border-t sm:border-t-0 pt-3 sm:pt-0">
+                            <p className="text-base md:text-lg font-black text-slate-900">₹{order.totalAmount}</p>
+                            <button className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all">
+                              <ArrowUpRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
+        )}
+      </div>
+    </div>
+  );
+}
+
+function KPICard({ label, value, icon, color }: any) {
+  return (
+    <div className="bg-white border border-slate-100 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-sm text-center min-w-[90px] md:min-w-[140px] shrink-0">
+      <div className={`mx-auto w-6 h-6 md:w-8 md:h-8 ${color} opacity-60 mb-1 md:mb-2 flex items-center justify-center`}>
+        {icon}
+      </div>
+      <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+      <p className="text-sm md:text-xl font-black text-slate-900 tracking-tighter">{value}</p>
     </div>
   );
 }
