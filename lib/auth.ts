@@ -1,27 +1,18 @@
-import * as jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 import User from "./models/User";
-import { connectDB } from "./mongoose";
 
 export async function getUserFromToken() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+
+  if (!token) return null;
+
   try {
-    await connectDB();
-
-    // ✅ FIX: await cookies()
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-
-    if (!token) return null;
-
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as { userId: string };
-
-    const user = await User.findById(decoded.userId).select("-password");
-    return user || null;
-  } catch (error) {
-    console.error("Auth error:", error);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    // Fetch user from DB to ensure they still exist and token is valid
+    return await User.findById(decoded.userId);
+  } catch (err) {
     return null;
   }
 }

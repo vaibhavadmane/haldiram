@@ -9,6 +9,7 @@ import Recipes from "../components/Recipes"
 import FestivalSection from "@/components/Festival";
 import GiftingPage from "@/components/Gifting";
 
+
 function Home() {
   const [width, setWidth] = useState(0);
 
@@ -40,6 +41,7 @@ function Home() {
       <GiftingPage/>
       <FestivalSection/>
       <EmailSubscription/>
+      
      <Footer/>
       
       
