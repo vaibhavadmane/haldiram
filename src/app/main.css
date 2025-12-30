@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand */
+  --haldiram-red: 355 81% 51%;
+  --haldiram-red-dark: 355 81% 45%;
+
+  /* Core colors */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 15%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 15%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 15%;
+
+  /* Primary / Secondary */
+  --primary: 355 81% 51%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 45 100% 50%;
+  --secondary-foreground: 0 0% 15%;
+
+  /* Muted */
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+
+  /* Accent */
+  --accent: 5 85% 65%;
+  --accent-foreground: 0 0% 100%;
+
+  /* UI */
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 355 81% 51%;
+
+  --radius: 0.5rem;
+}
+
+/* Dark mode (future-safe) */
+.dark {
+  --background: 0 0% 10%;
+  --foreground: 0 0% 95%;
+
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 95%;
+
+  --popover: 0 0% 12%;
+  --popover-foreground: 0 0% 95%;
+
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 65%;
+
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+}
+
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "Poppins", system-ui, sans-serif;
+}
+
+
+.bg-haldiram-red {
+  background-color: hsl(var(--haldiram-red));
+}
+
+.bg-haldiram-red-dark {
+  background-color: hsl(var(--haldiram-red-dark));
+}
+
+.text-haldiram-red {
+  color: hsl(var(--haldiram-red));
+}
+
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 10s linear infinite;
+}
+
+/* Product card hover effect */
+.product-card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-product);
+}
+
+/* Category card hover */
+.category-hover {
+  transition: transform 0.3s ease;
+}
+
+.category-hover:hover {
+  transform: scale(1.02);
+}
+
+/* Decorative shapes */
+.decorative-curve {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+
+/* Custom Scrollbar Styling */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 10px; /* Width of the vertical scrollbar */
+    height: 10px; /* Height of the horizontal scrollbar */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Color of the empty track */
+
+  }
+
+  ::-webkit-scrollbar-thumb {
+    /* Using the purple color from your screenshot button */
+    background: #DA0428; 
+   
+    /* Creates a small gap around the slider */
+   
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    /* A darker purple for when the user hovers over it */
+    background: #810202; 
+  }
+
+  /* Smooth scrolling for a better feel */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+@keyframes announcement-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-279%);
+  }
+}
+
+.animate-announcement {
+  animation: announcement-scroll 20s linear infinite;
+}
