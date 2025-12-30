@@ -1,12 +1,13 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { 
   LayoutDashboard, Layers, PlusSquare, Package, 
   ShoppingBag, Users, LogOut, Menu, X, ChevronRight,
-  CheckCircle, AlertCircle, Settings
+  CheckCircle, AlertCircle, Settings,
+  Boxes
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -22,7 +23,7 @@ export default function AdminLayout({
     { name: "Dashboard", href: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
     { name: "Categories", href: "/admin/categories", icon: <Layers className="w-5 h-5" /> },
     { name: "Products", href: "/admin/products", icon: <Package className="w-5 h-5" /> },
-    { name: "All Products", href: "/admin/allproducts", icon: <Package className="w-5 h-5" /> },
+    { name: "All Products", href: "/admin/allproducts", icon: <Boxes className="w-5 h-5" /> },
     { name: "Orders", href: "/admin/orders", icon: <ShoppingBag className="w-5 h-5" /> },
     { name: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" /> },
   ];
