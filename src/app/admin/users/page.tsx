@@ -47,7 +47,7 @@ export default function UsersPage() {
           <div className="relative w-full lg:w-96">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input 
-              className="w-full bg-white border-none shadow-sm rounded-2xl py-3 md:py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-indigo-600 transition-all outline-none"
+              className="w-full bg-white text-semibold text-black border-none shadow-sm rounded-2xl py-3 md:py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-indigo-600 transition-all outline-none"
               placeholder="Search customers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

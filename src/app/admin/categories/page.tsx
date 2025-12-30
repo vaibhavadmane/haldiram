@@ -71,12 +71,12 @@ export default function CategoriesPage() {
                     Category Name
                   </label>
                   <div className="relative">
-                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Tag className="absolute  left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="text"
                       value={name}
                       placeholder="e.g. Mithai, Bakery"
-                      className="w-full bg-slate-50 rounded-xl border-none ring-1 ring-slate-200 px-10 py-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                      className="w-full bg-slate-50 text-semibold text-black   rounded-xl border-none ring-1 ring-slate-200 px-10 py-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                       onChange={e => setName(e.target.value)}
                     />
                   </div>
@@ -90,13 +90,13 @@ export default function CategoriesPage() {
                     <Layers className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <select
                       value={parent}
-                      className="w-full bg-slate-50 rounded-xl border-none ring-1 ring-slate-200 px-10 py-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none"
+                      className="w-full text-semibold text-black   bg-slate-50 rounded-xl border-none ring-1 ring-slate-200 px-10 py-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none"
                       onChange={e => setParent(e.target.value)}
                     >
                       <option value="">Set as Main Category</option>
                       {categories.map(c => (
                         <option key={c._id} value={c._id}>
-                          Under: {c.name}
+                           {c.name}
                         </option>
                       ))}
                     </select>

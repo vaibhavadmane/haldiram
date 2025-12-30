@@ -7,15 +7,16 @@ import {
   Boxes, 
   ImagePlus, 
   X, 
-  ChevronRight, 
   PlusCircle, 
-  Loader2 
+  Loader2,
+  FileText,
+  Layout
 } from "lucide-react";
 
 export default function ProductsPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedParent, setSelectedParent] = useState("");
-  const [form, setForm] = useState<any>({ name: "", price: "", stock: "", category: "" });
+  const [form, setForm] = useState<any>({ name: "", price: "", stock: "", category: "", description: "" ,netWeight: ""});
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -26,13 +27,13 @@ export default function ProductsPage() {
 
   const subCategories = categories.find(c => c._id === selectedParent)?.children || [];
 
+  // Professional Light Input Class
+  const lightInputClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium";
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
-    
-    // Toast for feedback on selection
     toast.success(`${files.length} images selected`);
-    
     setImages((prev) => [...prev, ...files]);
     const newPreviews = files.map(file => URL.createObjectURL(file));
     setPreviews(prev => [...prev, ...newPreviews]);
@@ -46,27 +47,18 @@ export default function ProductsPage() {
   };
 
   const addProduct = async () => {
-    // 1. Validation Toast
-    if (!form.name || !form.price || !form.stock) {
+    if (!form.name || !form.price || !form.stock || !form.description) {
       return toast.error("Please fill in all product details");
     }
-    if (images.length === 0) {
-      return toast.error("Please upload at least one image");
-    }
-
     try {
       setLoading(true);
-      const loadingToast = toast.loading("Uploading product data...");
+      const loadingToast = toast.loading("Publishing product...");
       
       let imageUrls: string[] = [];
       if (images.length > 0) {
         const formData = new FormData();
         images.forEach(img => formData.append("images", img));
-
         const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-        
-        if (!uploadRes.ok) throw new Error("Image upload failed");
-        
         const uploadData = await uploadRes.json();
         imageUrls = uploadData.urls;
       }
@@ -79,121 +71,145 @@ export default function ProductsPage() {
 
       if (res.ok) {
         toast.dismiss(loadingToast);
-        toast.success("Product published successfully!", { duration: 4000 });
-        
-        // Brief delay before reload so they see the success toast
-        setTimeout(() => {
-            location.reload();
-        }, 1500);
-      } else {
-        throw new Error("Failed to save product");
+        toast.success("Product listed successfully!");
+        setTimeout(() => location.reload(), 1500);
       }
-      
     } catch (err) {
-      toast.dismiss(); // Remove loading toasts
-      toast.error("Something went wrong. Please try again.");
+      toast.dismiss();
+      toast.error("Failed to publish product");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] p-4 md:p-10 font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10 font-sans">
       <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        {/* Header Section */}
+        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Add New Product</h1>
-            <p className="text-slate-500 mt-1">Fill in the details below to list a new item in your shop.</p>
+            <h1 className="text-3xl font-[800] text-slate-900 tracking-tight">Create Product</h1>
+            <p className="text-slate-500 mt-1 font-medium text-sm md:text-base">List a new item in your digital store catalog.</p>
           </div>
           <button
             disabled={loading || !form.name}
             onClick={addProduct}
-            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:shadow-none"
+            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
-            {loading ? "Publishing..." : "Publish Product"}
+            {loading ? "Processing..." : "Publish Item"}
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Info Column */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Package className="w-5 h-5 text-blue-500" /> General Information
+          
+          {/* Main Content Area (2 Columns) */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* General Info Card */}
+            <div className="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-10 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-800 mb-8 flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Package size={20} /></div>
+                Inventory Details
               </h2>
               
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Product Name</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Product Title</label>
                   <input
-                    className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                    placeholder="e.g. Premium Kaju Katli"
+                    className={lightInputClass}
+                    placeholder="Enter descriptive product name"
                     onChange={e => setForm({ ...form, name: e.target.value })}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Price (INR)</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Price (INR)</label>
                     <div className="relative">
-                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
                         type="number"
-                        className="w-full rounded-xl border-slate-200 bg-slate-50 pl-10 pr-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        className={`${lightInputClass} pl-12`}
                         placeholder="0.00"
                         onChange={e => setForm({ ...form, price: e.target.value })}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Inventory Stock</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Initial Stock</label>
                     <div className="relative">
-                      <Boxes className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Boxes className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
                         type="number"
-                        className="w-full rounded-xl border-slate-200 bg-slate-50 pl-10 pr-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        className={`${lightInputClass} pl-12`}
                         placeholder="Quantity"
                         onChange={e => setForm({ ...form, stock: e.target.value })}
                       />
                     </div>
                   </div>
                 </div>
+                <div>
+    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Net Weight</label>
+    <div className="relative">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">Wt</div>
+      <input
+        type="text"
+        className={`${lightInputClass} pl-12`}
+        placeholder="e.g. 500g"
+        onChange={e => setForm({ ...form, netWeight: e.target.value })}
+      />
+    </div>
+  </div>
+
+                {/* Description Field */}
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1 flex items-center gap-2">
+                    <FileText size={12} /> Product Description
+                  </label>
+                  <textarea
+                    rows={5}
+                    className={`${lightInputClass} resize-none leading-relaxed`}
+                    placeholder="Write a detailed story about your product here..."
+                    onChange={e => setForm({ ...form, description: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Image Upload Area */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <ImagePlus className="w-5 h-5 text-blue-500" /> Product Media
+            {/* Media Upload Card */}
+            <div className="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-10 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-800 mb-8 flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><ImagePlus size={20} /></div>
+                Gallery Assets
               </h2>
               
-              <div className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-6 py-10 transition-colors hover:bg-slate-100/50">
+              <div className="group relative flex flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 transition-all hover:bg-slate-50 hover:border-blue-400">
                 <input
                   type="file" multiple accept="image/*"
                   className="absolute inset-0 z-10 cursor-pointer opacity-0"
                   onChange={handleImageChange}
                 />
                 <div className="flex flex-col items-center text-center">
-                  <div className="mb-3 rounded-full bg-white p-3 shadow-sm">
-                    <ImagePlus className="w-6 h-6 text-blue-500" />
+                  <div className="mb-4 rounded-full bg-white p-4 shadow-sm text-blue-500">
+                    <ImagePlus size={32} />
                   </div>
-                  <p className="text-sm font-bold text-slate-700">Click to upload or drag and drop</p>
-                  <p className="text-xs text-slate-400 mt-1">PNG, JPG or WebP (Max 2MB each)</p>
+                  <p className="text-sm font-bold text-slate-700">Add high-resolution images</p>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">Click to browse or drop files here</p>
                 </div>
               </div>
 
               {previews.length > 0 && (
-                <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {previews.map((src, idx) => (
-                    <div key={idx} className="group relative aspect-square rounded-xl border border-slate-200 overflow-hidden bg-slate-50">
-                      <img src={src} className="h-full w-full object-cover" alt="preview" />
+                    <div key={idx} className="group relative aspect-square rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                      <img src={src} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" alt="preview" />
                       <button 
                         onClick={() => removeImage(idx)}
-                        className="absolute top-1 right-1 rounded-full bg-rose-500 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        className="absolute top-2 right-2 rounded-full bg-white/90 backdrop-blur-sm p-1.5 text-rose-500 opacity-0 group-hover:opacity-100 transition-all shadow-md hover:bg-rose-500 hover:text-white"
                       >
-                        <X className="w-3 h-3" />
+                        <X size={14} />
                       </button>
                     </div>
                   ))}
@@ -202,44 +218,50 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {/* Sidebar Column: Categories */}
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-md font-bold text-slate-800 mb-4">Organization</h2>
+          {/* Sidebar Area (1 Column) */}
+          <div className="space-y-8">
+            <div className="rounded-[2rem] border border-slate-100 bg-white p-8 shadow-sm">
+              <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                <Layout size={16} className="text-blue-600" /> Categorization
+              </h2>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Category</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Main Dept.</label>
                   <select
-                    className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none"
+                    className={lightInputClass}
                     onChange={e => {
                       setSelectedParent(e.target.value);
                       setForm({ ...form, category: "" });
                     }}
                   >
-                    <option value="">Main Category</option>
+                    <option value="">Choose Category</option>
                     {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Sub-Category</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Sub-Section</label>
                   <select
                     disabled={!selectedParent}
-                    className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none disabled:opacity-50"
+                    className={`${lightInputClass} disabled:opacity-40 disabled:bg-slate-100 disabled:cursor-not-allowed`}
                     onChange={e => setForm({ ...form, category: e.target.value })}
                   >
-                    <option value="">Select Option</option>
+                    <option value="">Select Sub-type</option>
                     {subCategories.map((sc: any) => <option key={sc._id} value={sc._id}>{sc.name}</option>)}
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl bg-blue-900 p-6 text-white shadow-xl shadow-blue-100">
-              <h3 className="font-bold text-sm mb-2">Pro Tip</h3>
-              <p className="text-xs text-blue-100 leading-relaxed">
-                High-quality images increase sales by up to 40%. Ensure your sweets look delicious in bright lighting!
+            {/* Information Card */}
+            <div className="rounded-[2rem] bg-slate-900 p-8 text-white shadow-xl shadow-slate-200">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></div>
+                <h3 className="font-bold text-xs uppercase tracking-widest">Listing Quality</h3>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed font-medium">
+                Descriptions over <span className="text-white font-bold">100 characters</span> perform better in search results. Make sure to highlight what makes this item special.
               </p>
             </div>
           </div>
