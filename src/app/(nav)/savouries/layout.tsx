@@ -1,0 +1,135 @@
+"use client";
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import SavouriesBg from '@/components/images/Savouriesbg.jpg';
+import StarVector from '@/components/images/Vector.png';
+import cardTop from '@/components/images/cardtop.png';
+import cardBottom from '@/components/images/cardbottom.png';
+
+export default function SavouriesLayout({ children }: { children: React.ReactNode }) {
+  // openCategory controls both the sidebar highlight and the breadcrumb text
+  const [openCategory, setOpenCategory] = useState<string | null>('healthy');
+
+  const categories = [
+    { id: 'healthy', name: 'Healthy Snacking', path: '/savouries/healthy-snacks', sub: [{ name: 'Roasted', path: '/savouries/healthy-snacks' }] },
+    { id: 'namkeens', name: 'Namkeens', path: '/savouries/namkeens', sub: [{ name: 'Lite', path: '/savouries/namkeens' }] },
+    { id: 'chai', name: 'Chai Time Snacks', path: '/savouries/chai-time-snacks', sub: [{ name: 'Mathi', path: '/savouries/chai-time-snacks' }] },
+  ];
+
+  // Logic to find the name of the currently active category for the breadcrumb
+  const activeCategoryName = categories.find(cat => cat.id === openCategory)?.name || 'Healthy Snacking';
+
+  return (
+    <main className="min-h-screen bg-white">
+      {/* 1. TOP BANNER SECTION */}
+      <section className="relative w-full h-[350px]">
+        <Image src={SavouriesBg} alt="Banner" fill className="object-cover" priority />
+        <div className="absolute bottom-0 left-0 w-full z-10 flex items-center h-[111px] bg-[#CD9951]/80">
+          <div className="container mx-auto px-10 flex items-center gap-6">
+            <Image src={StarVector} alt="Star" width={30} height={30} className="brightness-0 invert" />
+            <h1 className="text-white text-5xl font-serif tracking-[0.2em] uppercase">Savouries</h1>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. BREADCRUMBS & SORT BAR (Responsive) */}
+      <div className="w-full bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4 md:px-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center min-h-[80px] md:h-[105px] py-4 md:py-0 gap-4">
+            
+            {/* Dynamic Breadcrumbs */}
+            <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[0.9rem] md:text-[1rem] text-[#002147] font-serif">
+              <Link href="/" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">
+                Home
+              </Link>
+              
+              <span className="text-gray-400">›</span>
+              
+              <Link href="/savouries" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">
+                Savouries
+              </Link>
+              
+              <span className="text-gray-400">›</span>
+              
+              {/* This span now changes based on the sidebar selection */}
+              <span className="font-semibold text-[#002147] whitespace-nowrap">
+                {activeCategoryName}
+              </span>
+            </nav>
+
+            {/* Sort Dropdown */}
+            <div className="relative w-full md:w-auto">
+              <select 
+                className="appearance-none bg-white border border-[#7C5A9F] rounded-full px-6 py-2 pr-12 text-[0.9rem] md:text-[1rem] text-[#002147] outline-none cursor-pointer hover:border-[#CD9951] transition-all w-full md:min-w-[240px]"
+                defaultValue="position"
+              >
+                <option value="position">Sort by Position</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="newest">Newest Arrivals</option>
+              </select>
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#002147]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. MAIN CONTENT AREA */}
+      <div className="px-10 py-10 flex flex-col md:flex-row gap-8">
+        {/* Sidebar */}
+        <aside className="w-[260px] flex-shrink-0">
+          <div className="relative bg-white px-5 py-4 border-x border-[#CD9951]/20">
+            {/* Left Decorative Border */}
+            <div className="absolute top-4 bottom-4 left-0 w-[4px] flex justify-between z-10">
+              <div className="w-[1px] h-full bg-[#CD9951]/60" />
+              <div className="w-[1px] h-full bg-[#CD9951]/60" />
+            </div>
+
+            {/* Right Decorative Border */}
+            <div className="absolute top-4 bottom-4 right-0 w-[4px] flex justify-between z-10">
+              <div className="w-[1px] h-full bg-[#CD9951]/60" />
+              <div className="w-[1px] h-full bg-[#CD9951]/60" />
+            </div>
+
+            {/* Top Border Image */}
+            <div className="absolute top-0 left-0 w-full h-[22px]">
+              <Image src={cardTop} alt="" fill className="object-fill" />
+            </div>
+
+            <nav className="py-8 flex flex-col gap-6 relative z-20">
+              {categories.map((cat) => (
+                <div key={cat.id}>
+                  <div className="flex justify-between items-center cursor-pointer" onClick={() => setOpenCategory(cat.id)}>
+                    <Link 
+                      href={cat.path} 
+                      className={`text-[15px] font-semibold transition-all ${
+                        openCategory === cat.id ? 'text-[#711A2E] underline underline-offset-4' : 'text-gray-600 hover:text-[#CD9951]'
+                      }`}
+                    >
+                      {cat.name}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </nav>
+
+            {/* Bottom Border Image */}
+            <div className="absolute bottom-0 left-0 w-full h-[22px]">
+              <Image src={cardBottom} alt="" fill className="object-fill" />
+            </div>
+          </div>
+        </aside>
+
+        {/* Dynamic Page Content */}
+        <section className="w-full">
+          {children}
+        </section>
+      </div>
+    </main>
+  );
+}

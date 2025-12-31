@@ -10,13 +10,14 @@ import {
   PlusCircle, 
   Loader2,
   FileText,
-  Layout
+  Layout,
+  Scale
 } from "lucide-react";
 
 export default function ProductsPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedParent, setSelectedParent] = useState("");
-  const [form, setForm] = useState<any>({ name: "", price: "", stock: "", category: "", description: "" ,netWeight: ""});
+  const [form, setForm] = useState<any>({ name: "", price: "", stock: "", category: "", description: "", netWeight: "" });
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,6 @@ export default function ProductsPage() {
 
   const subCategories = categories.find(c => c._id === selectedParent)?.children || [];
 
-  // Professional Light Input Class
   const lightInputClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium";
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,8 +47,8 @@ export default function ProductsPage() {
   };
 
   const addProduct = async () => {
-    if (!form.name || !form.price || !form.stock || !form.description) {
-      return toast.error("Please fill in all product details");
+    if (!form.name || !form.price || !form.stock || !form.description || !form.netWeight) {
+      return toast.error("Please fill in all product details including weight");
     }
     try {
       setLoading(true);
@@ -83,23 +83,15 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10 font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10 font-sans pb-20">
       <div className="mx-auto max-w-6xl">
         
-        {/* Header Section */}
+        {/* Header Section (Button Removed from here) */}
         <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-[800] text-slate-900 tracking-tight">Create Product</h1>
-            <p className="text-slate-500 mt-1 font-medium text-sm md:text-base">List a new item in your digital store catalog.</p>
+            <p className="text-slate-500 mt-1 font-medium text-sm md:text-base">Complete all sections to publish to your catalog.</p>
           </div>
-          <button
-            disabled={loading || !form.name}
-            onClick={addProduct}
-            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
-            {loading ? "Processing..." : "Publish Item"}
-          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -124,7 +116,7 @@ export default function ProductsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Price (INR)</label>
                     <div className="relative">
@@ -138,7 +130,19 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Initial Stock</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Net Weight</label>
+                    <div className="relative">
+                      <Scale className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        className={`${lightInputClass} pl-12`}
+                        placeholder="e.g. 500g"
+                        onChange={e => setForm({ ...form, netWeight: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1 text-black">Initial Stock</label>
                     <div className="relative">
                       <Boxes className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
@@ -150,20 +154,7 @@ export default function ProductsPage() {
                     </div>
                   </div>
                 </div>
-                <div>
-    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Net Weight</label>
-    <div className="relative">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">Wt</div>
-      <input
-        type="text"
-        className={`${lightInputClass} pl-12`}
-        placeholder="e.g. 500g"
-        onChange={e => setForm({ ...form, netWeight: e.target.value })}
-      />
-    </div>
-  </div>
 
-                {/* Description Field */}
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1 flex items-center gap-2">
                     <FileText size={12} /> Product Description
@@ -171,7 +162,7 @@ export default function ProductsPage() {
                   <textarea
                     rows={5}
                     className={`${lightInputClass} resize-none leading-relaxed`}
-                    placeholder="Write a detailed story about your product here..."
+                    placeholder="Describe the taste, ingredients, and uniqueness..."
                     onChange={e => setForm({ ...form, description: e.target.value })}
                   />
                 </div>
@@ -195,8 +186,8 @@ export default function ProductsPage() {
                   <div className="mb-4 rounded-full bg-white p-4 shadow-sm text-blue-500">
                     <ImagePlus size={32} />
                   </div>
-                  <p className="text-sm font-bold text-slate-700">Add high-resolution images</p>
-                  <p className="text-xs text-slate-400 mt-2 font-medium">Click to browse or drop files here</p>
+                  <p className="text-sm font-bold text-slate-700">Add product images</p>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">PNG, JPG or WebP (Max 2MB)</p>
                 </div>
               </div>
 
@@ -218,7 +209,7 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {/* Sidebar Area (1 Column) */}
+          {/* Sidebar Area (Categorization and Final Button) */}
           <div className="space-y-8">
             <div className="rounded-[2rem] border border-slate-100 bg-white p-8 shadow-sm">
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -227,7 +218,7 @@ export default function ProductsPage() {
               
               <div className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Main Dept.</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Category</label>
                   <select
                     className={lightInputClass}
                     onChange={e => {
@@ -235,34 +226,43 @@ export default function ProductsPage() {
                       setForm({ ...form, category: "" });
                     }}
                   >
-                    <option value="">Choose Category</option>
+                    <option value="">Main Category</option>
                     {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Sub-Section</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Sub-Category</label>
                   <select
                     disabled={!selectedParent}
                     className={`${lightInputClass} disabled:opacity-40 disabled:bg-slate-100 disabled:cursor-not-allowed`}
                     onChange={e => setForm({ ...form, category: e.target.value })}
                   >
-                    <option value="">Select Sub-type</option>
+                    <option value="">Select Option</option>
                     {subCategories.map((sc: any) => <option key={sc._id} value={sc._id}>{sc.name}</option>)}
                   </select>
                 </div>
               </div>
             </div>
 
-            {/* Information Card */}
-            <div className="rounded-[2rem] bg-slate-900 p-8 text-white shadow-xl shadow-slate-200">
+            <div className="rounded-[2rem] bg-slate-900 p-8 text-white shadow-xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></div>
-                <h3 className="font-bold text-xs uppercase tracking-widest">Listing Quality</h3>
+                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <h3 className="font-bold text-xs uppercase tracking-widest">Ready to go live?</h3>
               </div>
-              <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                Descriptions over <span className="text-white font-bold">100 characters</span> perform better in search results. Make sure to highlight what makes this item special.
+              <p className="text-sm text-slate-400 leading-relaxed font-medium mb-6">
+                Ensure all details and weights are correct. High quality images help customers choose your product faster.
               </p>
+              
+              {/* ✅ FINAL PUBLISH BUTTON: Stays at the bottom on all screens */}
+              <button
+                disabled={loading || !form.name}
+                onClick={addProduct}
+                className="w-full flex items-center justify-center gap-3 rounded-2xl bg-blue-600 py-5 text-base font-black text-white shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
+              >
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <PlusCircle className="w-6 h-6" />}
+                {loading ? "SYNCING..." : "PUBLISH PRODUCT"}
+              </button>
             </div>
           </div>
         </div>

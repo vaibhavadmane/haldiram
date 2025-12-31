@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "../../../../../lib/mongoose";
 import Order from "../../../../../lib/models/Order";
 import Product from "../../../../../lib/models/Product";
-import { ImPointUp } from "react-icons/im";
+// import { ImPointUp } from "react-icons/im";
 // import { verifyAdmin } from "../../../../../lib/adminAuth";
 import mongoose from "mongoose";
 

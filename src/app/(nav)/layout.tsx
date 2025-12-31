@@ -28,7 +28,9 @@ export default function NavLayout({
         { name: "TRAIL MIXES", img: trailmix },
       ];
   return (
+    
     <div className="flex flex-col min-h-screen">
+         <div className="h-1.5 bg-[#CD9951]" />
       {/* Shared Header for all navigation-based routes */}
       <Header />
       

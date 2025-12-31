@@ -1,12 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Toaster } from "react-hot-toast";
+import { usePathname, useRouter } from "next/navigation"; // ✅ Added useRouter
+import { Toaster, toast } from "react-hot-toast"; // ✅ Added toast
 import { 
-  LayoutDashboard, Layers, PlusSquare, Package, 
-  ShoppingBag, Users, LogOut, Menu, X, ChevronRight,
-  CheckCircle, AlertCircle, Settings
+  LayoutDashboard, Layers, Package, 
+  ShoppingBag, Users, LogOut, Menu, X, 
+  Boxes
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -15,6 +15,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter(); // ✅ Initialize router
   const [isCollapsed, setIsCollapsed] = useState(true); 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
 
@@ -22,17 +23,27 @@ export default function AdminLayout({
     { name: "Dashboard", href: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
     { name: "Categories", href: "/admin/categories", icon: <Layers className="w-5 h-5" /> },
     { name: "Products", href: "/admin/products", icon: <Package className="w-5 h-5" /> },
-    { name: "All Products", href: "/admin/allproducts", icon: <Package className="w-5 h-5" /> },
+    { name: "All Products", href: "/admin/allproducts", icon: <Boxes className="w-5 h-5" /> },
     { name: "Orders", href: "/admin/orders", icon: <ShoppingBag className="w-5 h-5" /> },
     { name: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" /> },
   ];
 
   const isActive = (path: string) => pathname === path;
 
-  // Function to handle link clicks
   const handleNavLinkClick = () => {
-    // Automatically close the mobile hamburger menu when a link is clicked
     setIsMobileMenuOpen(false);
+  };
+
+  // ✅ NEW: LOGOUT FUNCTION
+  const handleLogout = () => {
+    // 1. Show feedback to user
+    toast.success("Logged out successfully");
+
+    // 2. Redirect to the home page
+    router.push("/"); 
+    
+    // 3. Optional: Clear session storage or auth cookies here if applicable
+    // Example: localStorage.removeItem('adminToken');
   };
 
   return (
@@ -75,7 +86,7 @@ export default function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={handleNavLinkClick} // This closes the hamburger automatically
+                onClick={handleNavLinkClick}
                 className={`
                   group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200
                   ${isActive(item.href) 
@@ -96,7 +107,11 @@ export default function AdminLayout({
 
           {/* FOOTER ACTIONS */}
           <div className="px-3 mt-auto">
-            <button className={`flex items-center gap-4 w-full p-4 rounded-2xl hover:bg-rose-500/10 hover:text-rose-500 transition-all ${isCollapsed && !isMobileMenuOpen ? "lg:justify-center" : ""}`}>
+            {/* ✅ ADDED onClick handler here */}
+            <button 
+              onClick={handleLogout}
+              className={`flex items-center gap-4 w-full p-4 rounded-2xl hover:bg-rose-500/10 hover:text-rose-500 transition-all ${isCollapsed && !isMobileMenuOpen ? "lg:justify-center" : ""}`}
+            >
               <LogOut className="w-5 h-5" />
               {(!isCollapsed || isMobileMenuOpen) && <span className="font-bold">Logout</span>}
             </button>
@@ -106,7 +121,6 @@ export default function AdminLayout({
 
       {/* --- MAIN CONTENT --- */}
       <main className="flex-1 w-full transition-all duration-300">
-        {/* Mobile Header (Hidden on Desktop) */}
         <div className="lg:hidden flex items-center justify-between p-4 bg-slate-900 text-white sticky top-0 z-50">
           <button onClick={() => setIsMobileMenuOpen(true)}>
             <Menu className="w-6 h-6" />
