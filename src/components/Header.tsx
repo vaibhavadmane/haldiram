@@ -50,6 +50,7 @@ const Header = () => {
         const res = await fetch("/api/auth/me");
         if (res.ok) {
           const data = await res.json();
+
           setUser(data.user); 
         }
       } catch (err) {
@@ -67,6 +68,7 @@ const Header = () => {
       const res = await fetch("/api/cart");
       const data = await res.json();
       if (res.ok) setCartItems(data.items || []);
+      
     } catch (error) {
       console.error(error);
     } finally {
@@ -74,7 +76,17 @@ const Header = () => {
     }
   };
 
-  useEffect(() => { if (user) fetchCart(); }, [user]);
+// Inside your Header component
+useEffect(() => {
+  if (user) fetchCart();
+
+  // ✅ Add this listener to refresh cart when an order is placed
+  window.addEventListener("orderPlaced", fetchCart);
+  
+  return () => {
+    window.removeEventListener("orderPlaced", fetchCart);
+  };
+}, [user]);
 
   const updateQuantity = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -138,6 +150,7 @@ const Header = () => {
       });
 
       const data = await response.json();
+      localStorage.setItem("token", data.token);
       if (!response.ok) throw new Error(data.error || "Authentication failed");
 
       toast.success(authMode === "login" ? "Welcome back!" : "Signup Successful!");
@@ -219,14 +232,29 @@ const Header = () => {
             )}
           </div>
 
-          <div className="p-4 grid grid-cols-2 gap-3 bg-white border-t">
-            <Button className="bg-[#7F5B98] hover:bg-[#6b4c81] text-white py-6 rounded-md font-bold uppercase tracking-wider text-xs">
-              <ShoppingBag className="mr-2 h-4 w-4" /> CHECKOUT
-            </Button>
-            <Button variant="outline" onClick={() => { setIsCartOpen(false); router.push("/cart"); }} className="border-[#7F5B98] text-[#7F5B98] hover:bg-gray-50 py-6 rounded-md font-bold uppercase tracking-wider text-xs">
-              VIEW CART
-            </Button>
-          </div>
+      {/* ✅ CART DROPDOWN - FOOTER BUTTONS */}
+<div className="p-4 grid grid-cols-2 gap-3 bg-white border-t">
+  <Button 
+    onClick={() => {
+      setIsCartOpen(false); // Close the dropdown
+      router.push("/checkout"); // Navigate to checkout page
+    }}
+    className="bg-[#7F5B98] hover:bg-[#6b4c81] text-white py-6 rounded-md font-bold uppercase tracking-wider text-xs shadow-md flex items-center justify-center gap-2"
+  >
+    <ShoppingBag className="mr-2 h-4 w-4" /> CHECKOUT
+  </Button>
+  
+  <Button 
+    variant="outline" 
+    onClick={() => {
+      setIsCartOpen(false);
+      router.push("/cart");
+    }}
+    className="border-[#7F5B98] text-[#7F5B98] hover:bg-gray-50 py-6 rounded-md font-bold uppercase tracking-wider text-xs"
+  >
+    VIEW CART
+  </Button>
+</div>
         </div>
       )}
 
