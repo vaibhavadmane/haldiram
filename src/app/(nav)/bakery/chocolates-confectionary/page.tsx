@@ -1,15 +1,73 @@
-import { ProductCard } from '@/components/ProductCard';
+"use client";
 
-const products = [
-  { id: 701, name: "Dark Chocolate Truffle", price: "450.00", image: "/images/bakery/truffle.png" },
-  { id: 702, name: "Assorted Milk Chocolates", price: "500.00", image: "/images/bakery/assorted.png" },
-  { id: 703, name: "Caramel Toffee Pouch", price: "220.00", image: "/images/bakery/toffee.png" },
-];
+import { useState, useEffect } from 'react';
+import { ProductCard } from '@/components/ProductCard';
+import { toast } from 'react-hot-toast';
+
+// 1. Interface to handle the API response and prevent 'never' type errors
+interface Product {
+  _id: number;
+  name: string;
+  price: number;
+  images: string[];
+  category: {
+    name: string;
+    _id: string;
+  };
+}
 
 export default function ChocolatesPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        // 2. FILTER: Matches ' Chocolates & Confectionary' by trimming whitespace
+        const filtered = data.filter(
+          (item: Product) => item.category?.name.trim() === "Chocolates & Confectionary"
+        );
+        setProducts(filtered);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error("Failed to load chocolates");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  if (loading) return <div className="p-10 text-center text-[#711A2E]">Loading treats...</div>;
+
   return (
-    <div className="flex flex-wrap gap-6">
-      {products.map(p => <ProductCard key={p.id} product={p} />)}
+    <div className="p-6">
+      <h2 className="text-3xl font-serif text-[#711A2E] mb-8">Chocolates & Confectionary</h2>
+      
+      <div className="flex flex-wrap gap-6">
+        {products.map((p) => (
+          <ProductCard 
+            key={p._id} 
+            product={{
+              // Mapping string _id to id prop
+              id: p._id, 
+              name: p.name,
+              price: p.price.toString(),
+              image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder-chocolate.png'
+            }} 
+          />
+        ))}
+      </div>
+
+      {products.length === 0 && (
+        <p className="text-gray-500 mt-4 italic">No chocolates available right now.</p>
+      )}
     </div>
   );
 }

@@ -1,15 +1,73 @@
-import { ProductCard } from '@/components/ProductCard';
+"use client";
 
-const products = [
-  { id: 1001, name: "Premium Almonds (Badam)", price: "450.00", image: "/images/trail/almonds.png" },
-  { id: 1002, name: "Salted Pistachios", price: "520.00", image: "/images/trail/pistachios.png" },
-  { id: 1003, name: "Cashew Nuts (Kaju) W240", price: "480.00", image: "/images/trail/cashew.png" },
-];
+import { useState, useEffect } from 'react';
+import { ProductCard } from '@/components/ProductCard';
+import { toast } from 'react-hot-toast';
+
+// 1. Interface to prevent 'never' type errors
+interface Product {
+  _id: number;
+  name: string;
+  price: number;
+  images: string[];
+  category: {
+    name: string;
+    _id: string;
+  };
+}
 
 export default function DryFruitsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        // 2. FILTER: Using .trim() to match ' Dry Fruits' from your database
+        const filtered = data.filter(
+          (item: Product) => item.category?.name.trim() === "Dry Fruits"
+        );
+        setProducts(filtered);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error("Failed to load Dry Fruits");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  if (loading) return <div className="p-10 text-center text-[#711A2E]">Loading Dry Fruits...</div>;
+
   return (
-    <div className="flex flex-wrap gap-6">
-      {products.map(p => <ProductCard key={p.id} product={p} />)}
+    <div className="p-6">
+      <h2 className="text-3xl font-serif text-[#711A2E] mb-8">Dry Fruits</h2>
+      
+      <div className="flex flex-wrap gap-6">
+        {products.map((p) => (
+          <ProductCard 
+            key={p._id} 
+            product={{
+              // Mapping string _id to id prop
+              id: p._id, 
+              name: p.name,
+              price: p.price.toString(),
+              image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder-dryfruit.png'
+            }} 
+          />
+        ))}
+      </div>
+
+      {products.length === 0 && (
+        <p className="text-gray-500 mt-4 italic">Currently no premium dry fruits in stock.</p>
+      )}
     </div>
   );
 }

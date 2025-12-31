@@ -1,63 +1,72 @@
-import React from 'react';
+"use client";
+
+import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/ProductCard';
+import { toast } from 'react-hot-toast';
 
-// Define the products specific to Chai Time Snacks
-const products = [
-  { 
-    id: 201, 
-    name: "Achari Mathi", 
-    price: "120.00", 
-    image: "/images/mathi-achari.png" 
-  },
-  { 
-    id: 202, 
-    name: "Gol Mathi Traditional", 
-    price: "110.00", 
-    image: "/images/mathi-traditional.png" 
-  },
-  { 
-    id: 203, 
-    name: "Mini Samosa", 
-    price: "95.00", 
-    image: "/images/mini-samosa.png" 
-  },
-  { 
-    id: 204, 
-    name: "Kachori Snack", 
-    price: "95.00", 
-    image: "/images/kachori.png" 
-  },
-  { 
-    id: 205, 
-    name: "Suvali", 
-    price: "105.00", 
-    image: "/images/suvali.png" 
-  },
-  { 
-    id: 206, 
-    name: "Fan Puff", 
-    price: "80.00", 
-    image: "/images/fan-puff.png" 
-  },
-];
+// Define the Interface based on your API structure
+interface Product {
+  _id: number;
+  name: string;
+  price: number;
+  images: string[];
+  category: {
+    name: string;
+    _id: string;
+  };
+}
 
-const ChaiTimeSnacksPage = () => {
-  return (
-    <>
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-serif text-[#711A2E]">Chai Time Snacks</h2>
+export default function ChaiTimePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
       
-      </div>
+      if (Array.isArray(data)) {
+        // FILTER: Specifically for Chai Time Snacks
+        const filtered = data.filter(
+          (item: Product) => item.category?.name === "Chai Time Snacks"
+        );
+        setProducts(filtered);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to load snacks");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      {/* Product Grid */}
-      <div className="w-full flex flex-wrap gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  if (loading) return <div className="p-10 text-center">Loading snacks...</div>;
+
+  return (
+    <div className="p-6">
+      <h2 className="text-3xl font-serif text-[#711A2E] mb-8">Chai Time Snacks</h2>
+      
+      <div className="flex flex-wrap gap-6">
+        {products.map((p) => (
+          <ProductCard 
+            key={p._id} 
+            product={{
+              id: p._id, // Mapping string _id to id
+              name: p.name,
+              price: p.price.toString(),
+              image: p.images?.[0] || '/placeholder.png'
+            }} 
+          />
         ))}
       </div>
-    </>
-  );
-};
 
-export default ChaiTimeSnacksPage;
+      {products.length === 0 && (
+        <p className="text-gray-500 mt-4">No items found in this category.</p>
+      )}
+    </div>
+  );
+}

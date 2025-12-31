@@ -27,6 +27,7 @@ export default function ProductsPage() {
       const res = await fetch("/api/products");
       const data = await res.json();
       setProducts(data);
+      console.log(data)
     } catch (error) {
       toast.error("Failed to load inventory");
     } finally {
