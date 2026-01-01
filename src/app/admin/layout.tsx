@@ -6,7 +6,7 @@ import { Toaster, toast } from "react-hot-toast"; // ✅ Added toast
 import { 
   LayoutDashboard, Layers, Package, 
   ShoppingBag, Users, LogOut, Menu, X, 
-  Boxes
+  Boxes,UserPlus
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -25,6 +25,7 @@ export default function AdminLayout({
     { name: "Products", href: "/admin/products", icon: <Package className="w-5 h-5" /> },
     { name: "All Products", href: "/admin/allproducts", icon: <Boxes className="w-5 h-5" /> },
     { name: "Orders", href: "/admin/orders", icon: <ShoppingBag className="w-5 h-5" /> },
+    { name: "All Subscribers", href: "/admin/subscribers", icon: <UserPlus className="w-5 h-5" /> },
     { name: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" /> },
   ];
 

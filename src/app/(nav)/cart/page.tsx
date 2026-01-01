@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Minus, Plus, Heart, Trash2, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -185,9 +186,9 @@ const CartPage = () => {
               </div>
             </div>
 
-            <Button className="w-full bg-[#7F5B98] hover:bg-[#6b4c81] text-white py-8 mt-10 rounded-sm font-bold uppercase tracking-[0.1em] text-[13px] shadow-lg transition-all active:scale-[0.98]">
+         <Link href="/checkout">   <Button className="w-full bg-[#7F5B98] hover:bg-[#6b4c81] text-white py-8 mt-10 rounded-sm font-bold uppercase tracking-[0.1em] text-[13px] shadow-lg transition-all active:scale-[0.98]">
               Proceed to Checkout
-            </Button>
+            </Button></Link>
           </div>
         </div>
       </div>
