@@ -7,7 +7,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
         port: '',
-        pathname: '/**', // This allows all images from your Cloudinary account
+        pathname: '/**', 
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**', // This will allow images from Unsplash
       },
     ],
   },

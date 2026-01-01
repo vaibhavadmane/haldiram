@@ -14,14 +14,22 @@ const banners = [banner1, banner2, banner3, banner4, banner5];
 export default function Banner() {
   const [current, setCurrent] = useState(0);
 
-
+  // Optional: Auto-slide logic to make it more dynamic
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="w-full bg-[#fdf2f2]">
-      {/* Slider */}
-      <div className="relative h-[80vh] w-full overflow-hidden">
-        {/* Gradient background like Haldiram */}
-        <div className="absolute inset-0 bg-linear-to-r from-red-500 via-pink-500 to-orange-400" />
+      {/* Slider Container */}
+      {/* Mobile: 40vh | Tablet: 60vh | PC: 80vh */}
+      <div className="relative h-[40vh] sm:h-[60vh] lg:h-[80vh] w-full overflow-hidden">
+        
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-pink-500 to-orange-400" />
 
         {banners.map((banner, index) => (
           <div
@@ -35,10 +43,13 @@ export default function Banner() {
               alt={`Banner ${index + 1}`}
               fill
               className="object-cover"
+              sizes="100vw"
               priority={index === 0}
             />
           </div>
         ))}
+
+       
       </div>
 
       {/* Dots BELOW slider */}
@@ -47,7 +58,7 @@ export default function Banner() {
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`h-3 w-3 rounded-full transition-all duration-300
+            className={`h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full transition-all duration-300
               ${current === index ? "bg-red-600 scale-125" : "bg-gray-300"}
             `}
           />

@@ -1,18 +1,21 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronRight, Heart, Share2, Plus, Minus, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import Link from 'next/link';
 
 const ProductExplorer: React.FC = () => {
-  const params = useParams(); 
+  const params = useParams();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'ingredients' | 'specification'>('ingredients');
   const [isAdding, setIsAdding] = useState(false);
+  
+  // State for the currently displayed image
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const primaryColor = "#922367";
 
@@ -32,6 +35,17 @@ const ProductExplorer: React.FC = () => {
 
     if (params.id) fetchProductDetails();
   }, [params.id]);
+
+  // Logic to handle Up/Down arrow clicks
+  const handlePrevImage = () => {
+    setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+
+  const handleNextImage = () => {
+    if (product?.images) {
+      setActiveImageIndex((prev) => (prev < product.images.length - 1 ? prev + 1 : prev));
+    }
+  };
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -58,28 +72,64 @@ const ProductExplorer: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6 font-sans text-gray-800">
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-    <Link href='/'>    <span>Home</span> </Link><ChevronRight size={14} />
-       <span>{product.category?.name || 'Category'}</span> <ChevronRight size={14} />
+        <span>Home</span> <ChevronRight size={14} />
+        <span>{product.category?.name || 'Category'}</span> <ChevronRight size={14} />
         <span className="font-medium text-gray-900">{product.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div className="flex gap-4">
-          <div className="flex flex-col gap-4 items-center">
-            <button className="p-1 border rounded-full text-amber-600 border-amber-600"><ChevronUp size={20} /></button>
-            {product.images?.map((img: string, i: number) => (
-              <div key={i} className="w-20 h-20 border border-gray-300 rounded-md relative overflow-hidden bg-white">
-                <Image src={img} alt="" fill className="object-contain p-2" />
-              </div>
-            ))}
-            <button className="p-1 border rounded-full text-amber-600 border-amber-600"><ChevronDown size={20} /></button>
+        {/* LEFT COLUMN: IMAGE GALLERY */}
+        <div className="flex gap-4 h-[500px]"> 
+          {/* Thumbnails Track */}
+          <div className="flex flex-col gap-2 items-center">
+            <button 
+              onClick={handlePrevImage}
+              disabled={activeImageIndex === 0}
+              className="p-1 border rounded-full text-amber-600 border-amber-600 hover:bg-amber-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronUp size={20} />
+            </button>
+            
+            <div 
+              ref={scrollContainerRef}
+              className="flex flex-col gap-4 overflow-y-auto py-2 scroll-smooth" 
+              style={{ maxHeight: '400px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {product.images?.map((img: string, i: number) => (
+                <div 
+                  key={i} 
+                  onClick={() => setActiveImageIndex(i)}
+                  className={`w-20 h-20 flex-shrink-0 border rounded-md relative overflow-hidden bg-white cursor-pointer transition-all ${
+                    activeImageIndex === i ? 'border-amber-600 ring-2 ring-amber-600 ring-offset-1' : 'border-gray-300'
+                  }`}
+                >
+                  <Image src={img} alt={`Thumbnail ${i}`} fill className="object-contain p-2" />
+                </div>
+              ))}
+            </div>
+
+            <button 
+              onClick={handleNextImage}
+              disabled={activeImageIndex === (product.images?.length - 1)}
+              className="p-1 border rounded-full text-amber-600 border-amber-600 hover:bg-amber-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronDown size={20} />
+            </button>
           </div>
           
-          <div className="flex-1 border border-gray-300 rounded-md bg-white aspect-square relative">
-             <Image src={product.images?.[0]} alt={product.name} fill className="object-contain p-8" />
+          {/* Main Product Image View */}
+          <div className="flex-1 border border-gray-300 rounded-lg bg-white aspect-square relative overflow-hidden flex items-center justify-center">
+             <Image 
+                src={product.images?.[activeImageIndex]} 
+                alt={product.name} 
+                fill 
+                className="object-contain p-8 transition-all duration-300 ease-in-out" 
+                priority
+             />
           </div>
         </div>
 
+        {/* RIGHT COLUMN: PRODUCT INFO */}
         <div>
           <div className="flex justify-between items-start">
             <h1 style={{ color: primaryColor }} className="text-4xl font-serif font-medium uppercase">

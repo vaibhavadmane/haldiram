@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProductCard } from '@/components/ProductCard';
 import { toast } from 'react-hot-toast';
 
-// 1. Define the Interface to fix 'Property does not exist on type never'
 interface Product {
   _id: number;
   name: string;
@@ -19,6 +19,9 @@ interface Product {
 export default function HeatAndEatPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+
+  const sortType = searchParams.get('sort') || 'position';
 
   const fetchProducts = async () => {
     try {
@@ -26,7 +29,7 @@ export default function HeatAndEatPage() {
       const data = await res.json();
       
       if (Array.isArray(data)) {
-        // 2. FILTER: Using .trim() to handle the leading space in your DB (' Heat and Eat')
+        // FILTER: Using .trim() to handle the leading space (' Heat and Eat')
         const filtered = data.filter(
           (item: Product) => item.category?.name.trim() === "Heat and Eat"
         );
@@ -44,6 +47,18 @@ export default function HeatAndEatPage() {
     fetchProducts();
   }, []);
 
+  const sortedProducts = useMemo(() => {
+    const items = [...products];
+    switch (sortType) {
+      case 'price-low':
+        return items.sort((a, b) => a.price - b.price);
+      case 'price-high':
+        return items.sort((a, b) => b.price - a.price);
+      default:
+        return items;
+    }
+  }, [products, sortType]);
+
   if (loading) return <div className="p-10 text-center">Loading meals...</div>;
 
   return (
@@ -51,12 +66,10 @@ export default function HeatAndEatPage() {
       <h2 className="text-3xl font-serif text-[#711A2E] mb-8">Heat and Eat</h2>
       
       <div className="flex flex-wrap gap-6">
-        {products.map((p) => (
+        {sortedProducts.map((p) => (
           <ProductCard 
             key={p._id} 
             product={{
-              // p._id is a string from MongoDB. 
-              // Ensure ProductCard.tsx interface accepts id: string | number
               id: p._id, 
               name: p.name,
               price: p.price.toString(),
@@ -66,7 +79,7 @@ export default function HeatAndEatPage() {
         ))}
       </div>
 
-      {products.length === 0 && (
+      {sortedProducts.length === 0 && (
         <p className="text-gray-500 mt-4 italic">No ready-to-eat meals found.</p>
       )}
     </div>

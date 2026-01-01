@@ -1,30 +1,38 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 // Asset Imports
-
+import StarVector from '@/components/images/Vector.png';
 import cardTop from '@/components/images/cardtop.png';
 import cardBottom from '@/components/images/cardbottom.png';
 
 export default function TrailMixesLayout({ children }: { children: React.ReactNode }) {
-  // Default active category
-  const [openCategory, setOpenCategory] = useState<string | null>('dry-fruits');
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const categories = [
     { id: 'dry-fruits', name: 'Dry Fruits', path: '/trail-mixes/dry-fruits' },
-    // Add more categories here if needed in the future
   ];
 
-  const activeCategoryName = categories.find(cat => cat.id === openCategory)?.name || 'Dry Fruits';
+  const activeCategory = categories.find(cat => pathname.includes(cat.path)) || categories[0];
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sort', value);
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <main className="min-h-screen bg-white">
-      {/* 1. TOP BANNER SECTION */}
-   
+      {/* 1. TOP BANNER SECTION (Placeholder) */}
+ 
 
-      {/* 2. BREADCRUMBS & SORT BAR (Height: 105px) */}
+      {/* 2. BREADCRUMBS & SORT BAR */}
       <div className="w-full bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 md:px-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center min-h-[80px] md:h-[105px] py-4 md:py-0 gap-4">
@@ -32,13 +40,17 @@ export default function TrailMixesLayout({ children }: { children: React.ReactNo
             <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[1rem] text-[#002147] font-serif">
               <Link href="/" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Home</Link>
               <span className="text-gray-400">›</span>
-              <Link href="/trail-mixes" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Trail Mixes</Link>
+              <Link href="/trail-mixes/dry-fruits" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Trail Mixes</Link>
               <span className="text-gray-400">›</span>
-              <span className="font-semibold text-[#002147] whitespace-nowrap">{activeCategoryName}</span>
+              <span className="font-semibold text-[#002147] whitespace-nowrap">{activeCategory.name}</span>
             </nav>
 
             <div className="relative w-full md:w-auto">
-              <select className="appearance-none bg-white border border-[#7C5A9F] rounded-full px-6 py-2 pr-12 text-[1rem] text-[#002147] outline-none cursor-pointer hover:border-[#CD9951] transition-all w-full md:min-w-[240px]">
+              <select 
+                onChange={handleSortChange}
+                value={searchParams.get('sort') || 'position'}
+                className="appearance-none bg-white border border-[#7C5A9F] rounded-full px-6 py-2 pr-12 text-[1rem] text-[#002147] outline-none cursor-pointer hover:border-[#CD9951] transition-all w-full md:min-w-[240px]"
+              >
                 <option value="position">Sort by Position</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
@@ -57,7 +69,6 @@ export default function TrailMixesLayout({ children }: { children: React.ReactNo
       <div className="px-10 py-10 flex flex-col md:flex-row gap-8">
         <aside className="w-[260px] flex-shrink-0">
           <div className="relative bg-white px-5 py-4 border-x border-[#CD9951]/20">
-            {/* Custom Side Borders */}
             <div className="absolute top-4 bottom-4 left-0 w-[4px] flex justify-between z-10">
               <div className="w-[1px] h-full bg-[#CD9951]/60" />
               <div className="w-[1px] h-full bg-[#CD9951]/60" />
@@ -72,13 +83,14 @@ export default function TrailMixesLayout({ children }: { children: React.ReactNo
             <nav className="py-8 flex flex-col gap-6 relative z-20">
               {categories.map((cat) => (
                 <div key={cat.id}>
-                  <div className="flex justify-between items-center cursor-pointer" onClick={() => setOpenCategory(cat.id)}>
-                    <Link href={cat.path} className={`text-[15px] font-semibold transition-all ${
-                      openCategory === cat.id ? 'text-[#711A2E] underline underline-offset-4' : 'text-gray-600 hover:text-[#CD9951]'
-                    }`}>
-                      {cat.name}
-                    </Link>
-                  </div>
+                  <Link 
+                    href={cat.path} 
+                    className={`text-[15px] font-semibold block transition-all ${
+                      pathname.includes(cat.path) ? 'text-[#711A2E] underline underline-offset-4' : 'text-gray-600 hover:text-[#CD9951]'
+                    }`}
+                  >
+                    {cat.name}
+                  </Link>
                 </div>
               ))}
             </nav>

@@ -1,60 +1,148 @@
 "use client";
-import React from 'react';
-import { ProductCard } from '@/components/ProductCard';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { Loader2, X, ShoppingCart } from "lucide-react";
+import toast from "react-hot-toast";
 
 const FavoritesPage = () => {
-  // Example favorite item
-  const favoriteItems = [
-    { id: 1, name: "Makhana Salt N Pepper", price: "169.00", image: "/images/makhana-1.png" }
-  ];
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch Favorites Data
+  const fetchFavorites = async () => {
+    try {
+      const res = await fetch("/api/favorites");
+      const data = await res.json();
+      if (res.ok) {
+        // We assume the API returns { products: [...] }
+        setProducts(data.products || []);
+      }
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      toast.error("Failed to load favorites");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
+
+  // Toggle/Remove Item from Favorites
+  const removeItem = async (productId: string) => {
+    try {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId }),
+      });
+      if (res.ok) {
+        toast.success("Removed from favorites");
+        // Optimistically update the UI by filtering out the removed product
+        setProducts(products.filter((p) => p._id !== productId));
+        // Notify other components (like a Navbar favorite count)
+        window.dispatchEvent(new Event("favorites-updated"));
+      }
+    } catch (error) {
+      toast.error("Failed to remove from favorites");
+    }
+  };
+
+  // Add Item to Cart
+  const addToCart = async (productId: string) => {
+    try {
+      const res = await fetch("/api/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, quantity: 1 }),
+      });
+
+      if (res.ok) {
+        toast.success("Added to cart!");
+        // CRITICAL: Notify the rest of the app (Navbar) that the cart has changed
+        window.dispatchEvent(new Event("cart-updated"));
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.error || "Failed to add to cart");
+      }
+    } catch (error) {
+      toast.error("An error occurred while adding to cart");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#DA0428]" size={40} />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-[600px] bg-white p-4 md:p-8 animate-in fade-in duration-500">
+    <div className="max-w-7xl mx-auto p-4 md:p-8 min-h-screen">
+      <h1 className="text-2xl font-serif text-[#002855] mb-2 uppercase tracking-wider">
+        Your Favourites
+      </h1>
       
-      {/* 1. Favourite Products Section */}
-      <section className="mb-16">
-        <h2 className="text-[20px] font-serif tracking-widest text-gray-800 uppercase mb-2">
-          Your Favourites
-        </h2>
-        <p className="text-[13px] text-gray-600 mb-8">
-          Showing {favoriteItems.length} of {favoriteItems.length} items in this list
-        </p>
+      <p className="text-sm text-gray-500 mb-8 border-b pb-4">
+        Showing {products.length} {products.length === 1 ? 'item' : 'items'} in this list
+      </p>
 
-        <div className="flex flex-wrap gap-8">
-          {favoriteItems.length > 0 ? (
-            favoriteItems.map((product) => (
-              <div key={product.id} className="relative">
-                {/* Product Card Component */}
-                <ProductCard product={product} />
-                
-                {/* Top-Right Remove Icon (Matches Image) */}
-                <button className="absolute top-2 right-2 z-40 bg-white/80 rounded-full p-1 hover:text-red-600 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+      {products.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-sm border border-dashed border-gray-300">
+          <p className="text-gray-400 font-medium">Your favorites list is empty.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <div 
+              key={product._id} 
+              className="group relative bg-white border border-gray-100 rounded-sm hover:shadow-lg transition-all p-4 flex flex-col"
+            >
+              {/* Remove/Delete Button */}
+              <button 
+                onClick={() => removeItem(product._id)}
+                className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors z-10"
+                title="Remove from favorites"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Product Image */}
+              <div className="aspect-square relative mb-4 bg-white overflow-hidden flex items-center justify-center">
+                <Image
+                  src={product.images?.[0] || "/placeholder.png"}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-            ))
-          ) : (
-            <p className="text-gray-400 italic">You haven't added any favourites yet.</p>
-          )}
-        </div>
-      </section>
 
-      {/* 2. Favourite Recipes Section */}
-      <section>
-        <h2 className="text-[20px] font-serif tracking-widest text-gray-800 uppercase mb-6">
-          Your Favourite Recipes
-        </h2>
-        
-        <div className="py-12 border-2 border-dashed border-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
-          <p className="text-sm">No favourite recipes found</p>
+              {/* Product Info */}
+              <div className="text-center flex flex-col flex-grow">
+                <h3 className="font-bold text-gray-800 text-sm h-10 line-clamp-2 uppercase leading-tight mb-2">
+                  {product.name}
+                </h3>
+                
+                <div className="mt-auto">
+                  <p className="text-lg font-black text-[#DA0428] mb-3">
+                    ₹{product.price}
+                  </p>
+                  
+                  <button 
+                    onClick={() => addToCart(product._id)}
+                    className="w-full flex items-center justify-center gap-2 bg-[#7F5B98] text-white py-3 rounded-sm text-[11px] font-bold uppercase tracking-widest hover:bg-[#6b4c81] transition-all active:scale-95 shadow-sm"
+                  >
+                    <ShoppingCart size={14} strokeWidth={2.5} /> 
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </section>
-
+      )}
     </div>
   );
 };

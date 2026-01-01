@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 // Component/Asset Imports
 import BakeryBg from '@/components/images/BakeryBg.jpg'; 
@@ -10,14 +11,25 @@ import cardTop from '@/components/images/cardtop.png';
 import cardBottom from '@/components/images/cardbottom.png';
 
 export default function BakeryLayout({ children }: { children: React.ReactNode }) {
-  const [openCategory, setOpenCategory] = useState<string | null>('cookies');
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const categories = [
     { id: 'cookies', name: 'Cookies', path: '/bakery/cookies' },
     { id: 'chocolates', name: 'Chocolates & Confectionary', path: '/bakery/chocolates-confectionary' },
   ];
 
-  const activeCategoryName = categories.find(cat => cat.id === openCategory)?.name || 'Cookies';
+  // Sync active category with URL
+  const activeCategory = categories.find(cat => pathname.includes(cat.path)) || categories[0];
+
+  // Functional Sort Handler
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sort', value);
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <main className="min-h-screen bg-white">
@@ -32,24 +44,27 @@ export default function BakeryLayout({ children }: { children: React.ReactNode }
         </div>
       </section>
 
-      {/* 2. BREADCRUMBS & SORT BAR (Height: 105px) */}
+      {/* 2. BREADCRUMBS & SORT BAR */}
       <div className="w-full bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 md:px-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center min-h-[80px] md:h-[105px] py-4 md:py-0 gap-4">
-            
             <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[1rem] text-[#002147] font-serif">
               <Link href="/" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Home</Link>
               <span className="text-gray-400">›</span>
-              <Link href="/bakery" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Bakery</Link>
+              <Link href="/bakery/cookies" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Bakery</Link>
               <span className="text-gray-400">›</span>
-              <span className="font-semibold text-[#002147] whitespace-nowrap">{activeCategoryName}</span>
+              <span className="font-semibold text-[#002147] whitespace-nowrap">{activeCategory.name}</span>
             </nav>
 
             <div className="relative w-full md:w-auto">
-              <select className="appearance-none bg-white border border-[#7C5A9F] rounded-full px-6 py-2 pr-12 text-[1rem] text-[#002147] outline-none cursor-pointer hover:border-[#CD9951] transition-all w-full md:min-w-[240px]">
-                <option>Sort by Position</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
+              <select 
+                onChange={handleSortChange}
+                value={searchParams.get('sort') || 'position'}
+                className="appearance-none bg-white border border-[#7C5A9F] rounded-full px-6 py-2 pr-12 text-[1rem] text-[#002147] outline-none cursor-pointer hover:border-[#CD9951] transition-all w-full md:min-w-[240px]"
+              >
+                <option value="position">Sort by Position</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
               </select>
               <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#002147]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
@@ -80,13 +95,14 @@ export default function BakeryLayout({ children }: { children: React.ReactNode }
             <nav className="py-8 flex flex-col gap-6 relative z-20">
               {categories.map((cat) => (
                 <div key={cat.id}>
-                  <div className="flex justify-between items-center cursor-pointer" onClick={() => setOpenCategory(cat.id)}>
-                    <Link href={cat.path} className={`text-[15px] font-semibold transition-all ${
-                      openCategory === cat.id ? 'text-[#711A2E] underline underline-offset-4' : 'text-gray-600 hover:text-[#CD9951]'
-                    }`}>
-                      {cat.name}
-                    </Link>
-                  </div>
+                  <Link 
+                    href={cat.path} 
+                    className={`text-[15px] font-semibold block transition-all ${
+                      pathname.includes(cat.path) ? 'text-[#711A2E] underline underline-offset-4' : 'text-gray-600 hover:text-[#CD9951]'
+                    }`}
+                  >
+                    {cat.name}
+                  </Link>
                 </div>
               ))}
             </nav>

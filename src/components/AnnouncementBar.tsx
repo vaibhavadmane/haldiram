@@ -3,7 +3,7 @@ import anl from './images/anl.webp'
 
 const AnnouncementBar = () => {
   return (
-    <div className="bg-[#DA0428] py-1 overflow-hidden flex items-center">
+    <div className=" hidden bg-[#DA0428] py-1 overflow-hidden md:flex items-center ">
       <div className="relative w-full ">
         <div className="flex flex-row whitespace-nowrap animate-announcement text-white text-3sm  ">
             <span> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</span>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Plus, Minus, Heart } from 'lucide-react';
@@ -17,12 +17,62 @@ interface Product {
 export const ProductCard = ({ product }: { product: Product }) => {
   const [qty, setQty] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [loadingFav, setLoadingFav] = useState(false);
 
-  const addToCart = async (e: React.MouseEvent, quantity: number) => {
-    e.preventDefault(); 
+  // 1. Check if item is already favorited on mount
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      try {
+        const res = await fetch('/api/favorites');
+        if (res.ok) {
+          const data = await res.json();
+          const exists = data.products?.some((p: any) => (p._id || p) === product.id);
+          setIsFavorite(!!exists);
+        }
+      } catch (err) {
+        console.error("Error checking favorite status");
+      }
+    };
+    checkFavoriteStatus();
+  }, [product.id]);
+
+  // 2. Toggle Favorite Function
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     
-    // If quantity hits 0, just reset state
+    if (loadingFav) return;
+    setLoadingFav(true);
+
+    try {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Check if the product still exists in the returned list
+        const stillInFavorites = data.products?.some((p: any) => (p._id || p) === product.id);
+        setIsFavorite(stillInFavorites);
+        
+        toast.success(stillInFavorites ? "Added to favorites" : "Removed from favorites");
+        // Optional: Notify other components
+        window.dispatchEvent(new Event("favorites-updated"));
+      } else {
+        toast.error("Please login to save favorites");
+      }
+    } catch (err) {
+      toast.error("Failed to update favorites");
+    } finally {
+      setLoadingFav(false);
+    }
+  };
+
+  const addToCart = async (e: React.MouseEvent, quantity: number) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (quantity < 0) return;
 
     try {
@@ -31,9 +81,11 @@ export const ProductCard = ({ product }: { product: Product }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id, quantity }),
       });
+
       if (res.ok) {
         setQty(quantity);
         toast.success(quantity > 0 ? "Cart updated!" : "Removed from cart");
+        window.dispatchEvent(new Event("cart-updated"));
       }
     } catch (err) {
       toast.error("Failed to update cart");
@@ -42,8 +94,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
 
   return (
     <div className="relative w-[245px] h-[360px] group flex flex-col bg-white overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all">
-      
-      {/* Decorative Borders - pointer-events-none ensures they don't block clicks */}
+      {/* Decorative Borders */}
       <div className="absolute top-4 bottom-4 left-0 w-[4px] flex justify-between z-10 pointer-events-none">
         <div className="w-[1px] h-full bg-[#CD9951]/60" />
         <div className="w-[1px] h-full bg-[#CD9951]/60" />
@@ -60,23 +111,18 @@ export const ProductCard = ({ product }: { product: Product }) => {
         <Image src={cardBottom} alt="" className="w-full h-auto" />
       </div>
 
-      {/* Content Area */}
       <div className="relative z-30 py-8 px-4 flex flex-col h-full">
-        
-        {/* CLICKABLE AREA: IMAGE AND NAME */}
         <Link href={`/cardex/${product.id}`} className="flex-grow flex flex-col cursor-pointer">
           <div className="flex-grow flex items-center justify-center pt-4">
             <div className="relative w-32 h-32 transition-transform duration-300 group-hover:scale-110">
               <Image src={product.image} alt={product.name} fill className="object-contain" />
             </div>
           </div>
-
-          <h2 className="mt-4 text-sm font-bold text-gray-800 h-10 overflow-hidden leading-tight hover:text-[#922367] transition-colors">
+          <h2 className="mt-4 text-sm font-bold text-gray-800 h-10 overflow-hidden leading-tight hover:text-[#922367] transition-colors uppercase">
             {product.name}
           </h2>
         </Link>
 
-        {/* NON-CLICKABLE AREA: PRICE AND BUTTONS */}
         <div className="mt-2">
           <div className="flex justify-between items-center h-10">
             <h2 className="text-sm font-bold text-gray-900">
@@ -98,15 +144,22 @@ export const ProductCard = ({ product }: { product: Product }) => {
                   <button onClick={(e) => addToCart(e, qty + 1)} className="hover:scale-110"><Plus size={14} /></button>
                 </div>
               )}
+              
+              {/* HEART BUTTON - NOW CONNECTED TO DB */}
               <button 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  setIsFavorite(!isFavorite); 
-                }} 
-                className={`border w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isFavorite ? 'bg-[#711A2E] text-white border-[#711A2E]' : 'text-[#711A2E] border-gray-200'}`}
+                onClick={toggleFavorite}
+                disabled={loadingFav}
+                className={`border w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                  isFavorite 
+                  ? 'bg-[#711A2E] text-white border-[#711A2E]' 
+                  : 'text-[#711A2E] border-gray-200 hover:border-[#711A2E]'
+                } ${loadingFav ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
+                <Heart 
+                  size={18} 
+                  fill={isFavorite ? "currentColor" : "none"} 
+                  className={loadingFav ? "animate-pulse" : ""}
+                />
               </button>
             </div>
           </div>

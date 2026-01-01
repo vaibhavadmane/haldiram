@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProductCard } from '@/components/ProductCard';
 import { toast } from 'react-hot-toast';
 
-// 1. Interface matching your MongoDB object structure
 interface Product {
   _id: number;
   name: string;
@@ -19,6 +19,10 @@ interface Product {
 export default function CookiesPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+
+  // Get sort type from URL
+  const sortType = searchParams.get('sort') || 'position';
 
   const fetchProducts = async () => {
     try {
@@ -26,8 +30,6 @@ export default function CookiesPage() {
       const data = await res.json();
       
       if (Array.isArray(data)) {
-        // 2. FILTER: Only show items belonging to "Cookies"
-        // Using .trim() because your API data showed a space: ' Cookies'
         const filtered = data.filter(
           (item: Product) => item.category?.name.trim() === "Cookies"
         );
@@ -45,6 +47,19 @@ export default function CookiesPage() {
     fetchProducts();
   }, []);
 
+  // Apply sorting logic
+  const sortedProducts = useMemo(() => {
+    const items = [...products];
+    switch (sortType) {
+      case 'price-low':
+        return items.sort((a, b) => a.price - b.price);
+      case 'price-high':
+        return items.sort((a, b) => b.price - a.price);
+      default:
+        return items;
+    }
+  }, [products, sortType]);
+
   if (loading) return <div className="p-10 text-center">Loading Cookies...</div>;
 
   return (
@@ -52,11 +67,10 @@ export default function CookiesPage() {
       <h2 className="text-3xl font-serif text-[#711A2E] mb-8">Cookies</h2>
       
       <div className="flex flex-wrap gap-6">
-        {products.map((p) => (
+        {sortedProducts.map((p) => (
           <ProductCard 
             key={p._id} 
             product={{
-              // Mapping the string _id from your API to the id prop
               id: p._id, 
               name: p.name,
               price: p.price.toString(),
@@ -66,7 +80,7 @@ export default function CookiesPage() {
         ))}
       </div>
 
-      {products.length === 0 && (
+      {sortedProducts.length === 0 && (
         <p className="text-gray-500 mt-4 italic">No cookies available at the moment.</p>
       )}
     </div>

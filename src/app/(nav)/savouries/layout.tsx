@@ -1,28 +1,40 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'; // Added hooks
 import SavouriesBg from '@/components/images/Savouriesbg.jpg';
 import StarVector from '@/components/images/Vector.png';
 import cardTop from '@/components/images/cardtop.png';
 import cardBottom from '@/components/images/cardbottom.png';
 
 export default function SavouriesLayout({ children }: { children: React.ReactNode }) {
-  // openCategory controls both the sidebar highlight and the breadcrumb text
-  const [openCategory, setOpenCategory] = useState<string | null>('healthy');
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const categories = [
-    { id: 'healthy', name: 'Healthy Snacking', path: '/savouries/healthy-snacks', sub: [{ name: 'Roasted', path: '/savouries/healthy-snacks' }] },
-    { id: 'namkeens', name: 'Namkeens', path: '/savouries/namkeens', sub: [{ name: 'Lite', path: '/savouries/namkeens' }] },
-    { id: 'chai', name: 'Chai Time Snacks', path: '/savouries/chai-time-snacks', sub: [{ name: 'Mathi', path: '/savouries/chai-time-snacks' }] },
+    { id: 'healthy', name: 'Healthy Snacking', path: '/savouries/healthy-snacks' },
+    { id: 'namkeens', name: 'Namkeens', path: '/savouries/namkeens' },
+    { id: 'chai', name: 'Chai Time Snacks', path: '/savouries/chai-time-snacks' },
   ];
 
-  // Logic to find the name of the currently active category for the breadcrumb
-  const activeCategoryName = categories.find(cat => cat.id === openCategory)?.name || 'Healthy Snacking';
+  // 1. FIX: Find active category based on URL pathname instead of local state
+  const activeCategory = categories.find(cat => pathname.includes(cat.path)) || categories[0];
+
+  // 2. FIX: Handle Sort Change using URL search params
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sort', value);
+    
+    // Pushes the new URL (e.g., /savouries/namkeens?sort=price-low)
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <main className="min-h-screen bg-white">
-      {/* 1. TOP BANNER SECTION */}
+      {/* TOP BANNER SECTION */}
       <section className="relative w-full h-[350px]">
         <Image src={SavouriesBg} alt="Banner" fill className="object-cover" priority />
         <div className="absolute bottom-0 left-0 w-full z-10 flex items-center h-[111px] bg-[#CD9951]/80">
@@ -33,36 +45,27 @@ export default function SavouriesLayout({ children }: { children: React.ReactNod
         </div>
       </section>
 
-      {/* 2. BREADCRUMBS & SORT BAR (Responsive) */}
+      {/* BREADCRUMBS & SORT BAR */}
       <div className="w-full bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 md:px-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center min-h-[80px] md:h-[105px] py-4 md:py-0 gap-4">
             
-            {/* Dynamic Breadcrumbs */}
             <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[0.9rem] md:text-[1rem] text-[#002147] font-serif">
-              <Link href="/" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">
-                Home
-              </Link>
-              
+              <Link href="/" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Home</Link>
               <span className="text-gray-400">›</span>
-              
-              <Link href="/savouries" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">
-                Savouries
-              </Link>
-              
+              <Link href="/savouries/healthy-snacks" className="hover:text-[#CD9951] transition-colors whitespace-nowrap">Savouries</Link>
               <span className="text-gray-400">›</span>
-              
-              {/* This span now changes based on the sidebar selection */}
               <span className="font-semibold text-[#002147] whitespace-nowrap">
-                {activeCategoryName}
+                {activeCategory.name}
               </span>
             </nav>
 
-            {/* Sort Dropdown */}
+            {/* Updated Sort Dropdown */}
             <div className="relative w-full md:w-auto">
               <select 
+                onChange={handleSortChange}
+                value={searchParams.get('sort') || 'position'}
                 className="appearance-none bg-white border border-[#7C5A9F] rounded-full px-6 py-2 pr-12 text-[0.9rem] md:text-[1rem] text-[#002147] outline-none cursor-pointer hover:border-[#CD9951] transition-all w-full md:min-w-[240px]"
-                defaultValue="position"
               >
                 <option value="position">Sort by Position</option>
                 <option value="price-low">Price: Low to High</option>
@@ -79,24 +82,9 @@ export default function SavouriesLayout({ children }: { children: React.ReactNod
         </div>
       </div>
 
-      {/* 3. MAIN CONTENT AREA */}
       <div className="px-10 py-10 flex flex-col md:flex-row gap-8">
-        {/* Sidebar */}
         <aside className="w-[260px] flex-shrink-0">
           <div className="relative bg-white px-5 py-4 border-x border-[#CD9951]/20">
-            {/* Left Decorative Border */}
-            <div className="absolute top-4 bottom-4 left-0 w-[4px] flex justify-between z-10">
-              <div className="w-[1px] h-full bg-[#CD9951]/60" />
-              <div className="w-[1px] h-full bg-[#CD9951]/60" />
-            </div>
-
-            {/* Right Decorative Border */}
-            <div className="absolute top-4 bottom-4 right-0 w-[4px] flex justify-between z-10">
-              <div className="w-[1px] h-full bg-[#CD9951]/60" />
-              <div className="w-[1px] h-full bg-[#CD9951]/60" />
-            </div>
-
-            {/* Top Border Image */}
             <div className="absolute top-0 left-0 w-full h-[22px]">
               <Image src={cardTop} alt="" fill className="object-fill" />
             </div>
@@ -104,28 +92,24 @@ export default function SavouriesLayout({ children }: { children: React.ReactNod
             <nav className="py-8 flex flex-col gap-6 relative z-20">
               {categories.map((cat) => (
                 <div key={cat.id}>
-                  <div className="flex justify-between items-center cursor-pointer" onClick={() => setOpenCategory(cat.id)}>
-                    <Link 
-                      href={cat.path} 
-                      className={`text-[15px] font-semibold transition-all ${
-                        openCategory === cat.id ? 'text-[#711A2E] underline underline-offset-4' : 'text-gray-600 hover:text-[#CD9951]'
-                      }`}
-                    >
-                      {cat.name}
-                    </Link>
-                  </div>
+                  <Link 
+                    href={cat.path} 
+                    className={`text-[15px] font-semibold block transition-all ${
+                      pathname.includes(cat.path) ? 'text-[#711A2E] underline underline-offset-4' : 'text-gray-600 hover:text-[#CD9951]'
+                    }`}
+                  >
+                    {cat.name}
+                  </Link>
                 </div>
               ))}
             </nav>
 
-            {/* Bottom Border Image */}
             <div className="absolute bottom-0 left-0 w-full h-[22px]">
               <Image src={cardBottom} alt="" fill className="object-fill" />
             </div>
           </div>
         </aside>
 
-        {/* Dynamic Page Content */}
         <section className="w-full">
           {children}
         </section>

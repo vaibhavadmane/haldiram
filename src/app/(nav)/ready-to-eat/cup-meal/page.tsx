@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProductCard } from '@/components/ProductCard';
 import { toast } from 'react-hot-toast';
 
-// 1. Interface to handle the API response and prevent 'never' type errors
 interface Product {
   _id: number;
   name: string;
@@ -19,6 +19,10 @@ interface Product {
 export default function CupMealsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+
+  // Get sort type from URL
+  const sortType = searchParams.get('sort') || 'position';
 
   const fetchProducts = async () => {
     try {
@@ -26,7 +30,7 @@ export default function CupMealsPage() {
       const data = await res.json();
       
       if (Array.isArray(data)) {
-        // 2. FILTER: Matches ' Cup Meals' by trimming whitespace
+        // FILTER: Matches 'Cup Meals' by trimming whitespace
         const filtered = data.filter(
           (item: Product) => item.category?.name.trim() === "Cup Meals"
         );
@@ -44,6 +48,19 @@ export default function CupMealsPage() {
     fetchProducts();
   }, []);
 
+  // Sort logic applied to filtered items
+  const sortedProducts = useMemo(() => {
+    const items = [...products];
+    switch (sortType) {
+      case 'price-low':
+        return items.sort((a, b) => a.price - b.price);
+      case 'price-high':
+        return items.sort((a, b) => b.price - a.price);
+      default:
+        return items; // Default order from API
+    }
+  }, [products, sortType]);
+
   if (loading) return <div className="p-10 text-center text-[#711A2E]">Loading quick meals...</div>;
 
   return (
@@ -51,11 +68,10 @@ export default function CupMealsPage() {
       <h2 className="text-3xl font-serif text-[#711A2E] mb-8">Cup Meals</h2>
       
       <div className="flex flex-wrap gap-6">
-        {products.map((p) => (
+        {sortedProducts.map((p) => (
           <ProductCard 
             key={p._id} 
             product={{
-              // Mapping string _id to id prop
               id: p._id, 
               name: p.name,
               price: p.price.toString(),
@@ -65,7 +81,7 @@ export default function CupMealsPage() {
         ))}
       </div>
 
-      {products.length === 0 && (
+      {sortedProducts.length === 0 && (
         <p className="text-gray-500 mt-4 italic">No cup meals currently available.</p>
       )}
     </div>
