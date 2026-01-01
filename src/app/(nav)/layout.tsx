@@ -14,6 +14,8 @@ import Image from "next/image";
  * This ensures every page inside /savouries, /mithai, /bakery, etc.
  * shares the same Header and Footer.
  */
+export const dynamic = "force-dynamic";
+
 export default function NavLayout({
      
   children,
