@@ -12,6 +12,10 @@ const ProductExplorer: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'ingredients' | 'specification'>('ingredients');
   const [isAdding, setIsAdding] = useState(false);
+
+  // Favorite States
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [loadingFav, setLoadingFav] = useState(false);
   
   // State for the currently displayed image
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -26,6 +30,11 @@ const ProductExplorer: React.FC = () => {
         const data = await res.json();
         const found = data.find((p: any) => p._id.toString() === params.id);
         setProduct(found);
+        
+        // Check if this product is already in favorites
+        if (found) {
+          checkFavoriteStatus(found._id);
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -35,6 +44,51 @@ const ProductExplorer: React.FC = () => {
 
     if (params.id) fetchProductDetails();
   }, [params.id]);
+
+  // Function to check initial favorite status
+  const checkFavoriteStatus = async (productId: string) => {
+    try {
+      const res = await fetch('/api/favorites');
+      if (res.ok) {
+        const data = await res.json();
+        const exists = data.products?.some((p: any) => (p._id || p) === productId);
+        setIsFavorite(!!exists);
+      }
+    } catch (err) {
+      console.error("Error checking favorite status");
+    }
+  };
+
+  // Toggle Favorite Function
+  const toggleFavorite = async () => {
+    if (loadingFav || !product) return;
+    setLoadingFav(true);
+
+    try {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product._id }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Determine status based on the returned updated list
+        const stillInFavorites = data.products?.some((p: any) => (p._id || p) === product._id);
+        setIsFavorite(stillInFavorites);
+        
+        toast.success(stillInFavorites ? "Added to favorites" : "Removed from favorites");
+        // Sync with other components (like Header)
+        window.dispatchEvent(new Event("favorites-updated"));
+      } else {
+        toast.error("Please login to save favorites");
+      }
+    } catch (err) {
+      toast.error("Failed to update favorites");
+    } finally {
+      setLoadingFav(false);
+    }
+  };
 
   // Logic to handle Up/Down arrow clicks
   const handlePrevImage = () => {
@@ -57,6 +111,7 @@ const ProductExplorer: React.FC = () => {
       });
       if (res.ok) {
         toast.success(`${quantity} ${product.name} added to cart!`);
+        window.dispatchEvent(new Event("cart-updated"));
       }
     } catch (err) {
       toast.error("Failed to add to cart");
@@ -137,7 +192,13 @@ const ProductExplorer: React.FC = () => {
             </h1>
             <div className="flex gap-2">
               <button className="p-2 border rounded-md hover:bg-gray-50"><Share2 size={20} /></button>
-              <button className="p-2 border rounded-md hover:bg-gray-50 text-red-500"><Heart size={20} /></button>
+              <button 
+                onClick={toggleFavorite}
+                disabled={loadingFav}
+                className={`p-2 border rounded-md transition-colors hover:bg-gray-50 ${isFavorite ? 'text-red-500 bg-red-50 border-red-200' : 'text-gray-400'}`}
+              >
+                <Heart size={20} fill={isFavorite ? "currentColor" : "none"} className={loadingFav ? "animate-pulse" : ""} />
+              </button>
             </div>
           </div>
 
