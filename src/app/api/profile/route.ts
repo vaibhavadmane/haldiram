@@ -8,53 +8,44 @@ export async function POST(req: Request) {
     await connectDB();
 
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    const token = authHeader?.split(" ")[1];
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1];
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    ) as { userId: string };
 
     const { name, phone, gender, address } = await req.json();
 
-    const updatedUser = await User.findByIdAndUpdate(
+    // ✅ Build update object
+    const updateData: any = {
+      ...(name && { name }),
+      ...(phone && { phone }),
+      ...(gender && { gender }),
+    };
+
+    // 🔥 MERGE address fields one by one
+    if (address) {
+      Object.keys(address).forEach((key) => {
+        updateData[`address.${key}`] = address[key];
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
       decoded.userId,
-      {
-        ...(name && { name }),
-        ...(phone && { phone }),
-        ...(gender && { gender }),
-        ...(address && { address })
-      },
+      { $set: updateData },
       { new: true }
     ).select("-password");
-
-    return NextResponse.json(updatedUser);
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(req: Request) {
-  try {
-    await connectDB();
-
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader?.split(" ")[1];
-    const decoded: any = jwt.verify(token!, process.env.JWT_SECRET!);
-
-    const user = await User.findById(decoded.userId).select("-password");
 
     return NextResponse.json(user);
   } catch (err: any) {
     return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
+      { error: err.message },
+      { status: 500 }
     );
   }
 }
