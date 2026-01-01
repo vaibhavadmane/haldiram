@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronRight, Heart, Share2, Plus, Minus, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import Link from 'next/link';
 
 const ProductExplorer: React.FC = () => {
   const params = useParams();
@@ -233,9 +234,9 @@ const ProductExplorer: React.FC = () => {
             >
               {isAdding ? "Adding..." : "Add To Cart"}
             </button>
-            <button className="flex-1 py-4 border-2 rounded-md font-bold uppercase tracking-widest border-gray-400 hover:bg-gray-50 transition-colors">
+          <Link href="/checkout" className="flex-1 py-4 border-2 text-center  rounded-md font-bold uppercase tracking-widest border-gray-400 hover:bg-gray-50 transition-colors">  
               Continue Shopping
-            </button>
+            </Link>
           </div>
 
           <div className="mt-12">

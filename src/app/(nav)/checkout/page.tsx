@@ -52,10 +52,36 @@ const CheckoutPage = () => {
           pincode: userData.address.pincode,
         }),
       });
+      
       const result = await response.json();
+      
       if (response.ok) {
+        // --- START: CLEAR CART LOGIC ---
+        // Option A: If your API supports clearing the whole cart at once (Recommended)
+        // await fetch("/api/cart/clear", { method: "DELETE" });
+
+        // Option B: Using your specific "/api/cart/remove" for each item
+        const removePromises = cartItems.map((item) =>
+          fetch("/api/cart/remove", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: item.product._id }),
+          })
+        );
+        
+        // Wait for all items to be removed from the database
+        await Promise.all(removePromises);
+        
+        // Clear local state
+        setCartItems([]); 
+        // --- END: CLEAR CART LOGIC ---
+
         toast.success("Order Placed Successfully!");
+        
+        // Notify other components (like Header) that the cart is now empty
+        window.dispatchEvent(new Event("cart-updated"));
         window.dispatchEvent(new Event("orderPlaced"));
+        
         router.push(`/order-success?id=${result.order._id}`);
       } else {
         toast.error(result.error || "Failed to place order");
