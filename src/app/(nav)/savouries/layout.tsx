@@ -35,15 +35,37 @@ export default function SavouriesLayout({ children }: { children: React.ReactNod
   return (
     <main className="min-h-screen bg-white">
       {/* TOP BANNER SECTION */}
-      <section className="relative w-full h-[350px]">
-        <Image src={SavouriesBg} alt="Banner" fill className="object-cover" priority />
-        <div className="absolute bottom-0 left-0 w-full z-10 flex items-center h-[111px] bg-[#CD9951]/80">
-          <div className="container mx-auto px-10 flex items-center gap-6">
-            <Image src={StarVector} alt="Star" width={30} height={30} className="brightness-0 invert" />
-            <h1 className="text-white text-5xl font-serif tracking-[0.2em] uppercase">Savouries</h1>
-          </div>
-        </div>
-      </section>
+     <section className="relative w-full h-[200px] md:h-[350px]">
+  <Image 
+    src={SavouriesBg} 
+    alt="Banner" 
+    fill 
+    className="object-cover" 
+    priority 
+  />
+  
+  {/* The gold overlay bar */}
+  <div className="absolute bottom-0 left-0 w-full z-10 flex items-center h-[70px] md:h-[111px] bg-[#CD9951]/80">
+    <div className="container mx-auto px-6 md:px-10 flex items-center gap-3 md:gap-6">
+      
+      {/* Star Icon - Resizes on mobile */}
+      <div className="relative w-[20px] h-[20px] md:w-[30px] md:h-[30px]">
+        <Image 
+          src={StarVector} 
+          alt="Star" 
+          fill
+          className="brightness-0 invert object-contain" 
+        />
+      </div>
+
+      {/* Heading - Scales from 2xl to 5xl */}
+      <h1 className="text-white text-2xl md:text-5xl font-serif tracking-[0.1em] md:tracking-[0.2em] uppercase">
+        Savouries
+      </h1>
+      
+    </div>
+  </div>
+</section>
 
       {/* BREADCRUMBS & SORT BAR */}
       <div className="w-full bg-white border-b border-gray-100">

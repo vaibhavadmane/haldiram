@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import {
   Search, ShoppingCart, Heart, Menu, User,
   ChevronDown, X, ChevronRight, Mail, Lock,
-  UserCircle, Loader2, Minus, Plus, LayoutGrid
+  UserCircle, Loader2, Minus, Plus, LayoutGrid ,ArrowRight
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -334,7 +334,7 @@ const Header = () => {
             )}
           </div>
           <div className="p-4 grid grid-cols-2 gap-3 bg-white border-t sticky bottom-0">
-            <Button className="bg-[#7F5B98] hover:bg-[#6b4c81] text-white py-6 rounded-md font-bold uppercase text-xs">CHECKOUT</Button>
+            <Button onClick={() => { setIsCartOpen(false); router.push("/checkout"); }} className="bg-[#7F5B98] hover:bg-[#6b4c81] text-white py-6 rounded-md font-bold uppercase text-xs">CHECKOUT</Button>
             <Button variant="outline" onClick={() => { setIsCartOpen(false); router.push("/cart"); }} className="border-[#7F5B98] text-[#7F5B98] py-6 rounded-md font-bold uppercase text-xs">VIEW CART</Button>
           </div>
         </div>
@@ -532,77 +532,141 @@ const Header = () => {
 
       {/* --- Side Drawer Menu --- */}
       <div className={`fixed top-0 left-0 h-full w-full max-w-[491px] bg-white z-[3005] shadow-xl transform transition-transform duration-300 ease-in-out ${isDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-2">
-            <X className="h-5 w-5 cursor-pointer text-[#DA0428]" onClick={() => setIsDrawerOpen(false)} />
-            <span className="text-lg font-serif text-[#DA0428]">All Categories</span>
+  <div className="flex items-center justify-between p-4 border-b">
+    <div className="flex items-center gap-2">
+      <X className="h-5 w-5 cursor-pointer text-[#DA0428]" onClick={() => setIsDrawerOpen(false)} />
+      <span className="text-lg font-serif text-[#DA0428]">All Categories</span>
+    </div>
+  </div>
+
+  <div className="p-4 flex flex-col h-[calc(100%-65px)]"> {/* Added flex-col and height to manage layout */}
+    <div className="flex-grow">
+      <Button className="w-full bg-[#7F5B98] text-white font-bold mb-6">CORPORATE</Button>
+      <ul className="space-y-6">
+        {navItems.map((item) => (
+          <li key={item.name}>
+            <Link href={item.href} className="flex items-center justify-between text-gray-700 hover:text-[#DA0428]" onClick={() => setIsDrawerOpen(false)}>
+              <span className="text-sm font-medium">{item.name}</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {/* --- Account Section Bottom --- */}
+    <div className="mt-auto pt-6 border-t border-gray-100">
+      <div className="flex items-center justify-between py-2">
+        <div className="flex items-center gap-3">
+          <User className="h-6 w-6 text-gray-800" />
+          {user ? (
+            <span className="text-[#003366] font-medium">Hi, {user.name}</span>
+          ) : (
+            <span className="text-[#003366] font-medium">Account</span>
+          )}
+        </div>
+
+        {user ? (
+          <Link href="/profile" onClick={() => setIsDrawerOpen(false)}>
+            <ArrowRight className="h-5 w-5 text-gray-800" />
+          </Link>
+        ) : (
+          <div
+            className="text-[#003366] font-semibold underline underline-offset-4 hover:cursor-pointer"
+            onClick={() => {setIsDrawerOpen(false); setIsLoginModalOpen(true)}}
+          >
+            Sign In
           </div>
-        </div>
-        <div className="p-4">
-          <Button className="w-full bg-[#7F5B98] text-white font-bold mb-6">CORPORATE</Button>
-          <ul className="space-y-6">
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <Link href={item.href} className="flex items-center justify-between text-gray-700 hover:text-[#DA0428]" onClick={() => setIsDrawerOpen(false)}>
-                  <span className="text-sm font-medium">{item.name}</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        )}
       </div>
+    </div>
+  </div>
+</div>
 
       {/* --- MOBILE SEARCH VIEW --- */}
-      {showSearchDropdown && (
-        <div className="sm:hidden fixed inset-0 bg-white z-[5000] flex flex-col animate-in slide-in-from-bottom duration-300">
-            <div className="p-4 border-b flex items-center gap-3">
-                <div className="flex-1 flex rounded-full ring-[1px] ring-[#DA0428] bg-white overflow-hidden h-10">
-                    <div className="bg-[#DA0428] w-10 flex items-center justify-center">
-                        <Search className="text-white h-5 w-5" />
-                    </div>
-                    <input 
-                      autoFocus
-                      type="text" 
-                      placeholder="Search products..." 
-                      className="flex-1 px-4 outline-none text-sm"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-                <button className="text-sm font-bold text-gray-500" onClick={() => setShowSearchDropdown(false)}>Cancel</button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-                {filteredProducts.length > 0 ? (
-                    filteredProducts.map((product) => {
-                        const isFav = favorites.includes(product._id);
-                        return (
-                            <div key={product._id} className="flex items-center gap-4 py-4 border-b">
-                                <div className="w-16 h-16 relative border rounded shrink-0" onClick={() => { setShowSearchDropdown(false); router.push(`/cardex/${product._id}`); }}>
-                                    <Image src={product.images?.[0] || logo} alt={product.name} fill className="object-contain p-1" />
-                                </div>
-                                <div className="flex-1 min-w-0" onClick={() => { setShowSearchDropdown(false); router.push(`/cardex/${product._id}`); }}>
-                                    <h4 className="font-bold text-sm truncate">{product.name}</h4>
-                                    <p className="text-xs text-gray-500">₹{product.price}</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <button onClick={(e) => handleToggleFavorite(e, product._id)} className={`${isFav ? "text-[#DA0428]" : "text-gray-300"}`}>
-                                        <Heart size={20} fill={isFav ? "currentColor" : "none"} />
-                                    </button>
-                                    <button onClick={(e) => handleAddToCart(e, product._id, 1)} className="bg-[#7F5B98] text-white p-2 rounded-lg">
-                                        <Plus size={18} />
-                                    </button>
-                                </div>
-                            </div>
-                        )
-                    })
-                ) : (
-                    <div className="text-center py-20 text-gray-400">No results found</div>
-                )}
-            </div>
+{showSearchDropdown && (
+  <div 
+    className="sm:hidden fixed inset-0 bg-white z-[5000] flex flex-col animate-in slide-in-from-bottom duration-300" 
+    /* This ref ensures the "handleClickOutside" logic knows we are clicking INSIDE the search */
+    ref={searchRef} 
+    onClick={(e) => {
+      e.stopPropagation(); // Prevents the click from reaching the background overlays
+    }}
+  >
+    <div className="p-4 border-b flex items-center gap-3">
+      <div className="flex-1 flex rounded-full ring-[1px] ring-[#DA0428] bg-white overflow-hidden h-10">
+        <div className="bg-[#DA0428] w-10 flex items-center justify-center">
+          <Search className="text-white h-5 w-5" />
         </div>
-      )}
+        <input 
+          autoFocus
+          type="text" 
+          placeholder="Search products..." 
+          className="flex-1 px-4 outline-none text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      <button 
+        className="text-sm font-bold text-gray-500" 
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowSearchDropdown(false);
+          setSearchQuery(""); // Clear search on cancel
+        }}
+      >
+        Cancel
+      </button>
+    </div>
 
+    <div className="flex-1 overflow-y-auto p-4">
+      {filteredProducts.length > 0 ? (
+        filteredProducts.map((product) => {
+          const isFav = favorites.includes(product._id);
+          return (
+            <div 
+              key={product._id} 
+              className="flex items-center gap-4 py-4 border-b active:bg-gray-50"
+              onClick={() => {
+                setShowSearchDropdown(false);
+                router.push(`/cardex/${product._id}`);
+              }}
+            >
+              <div className="w-16 h-16 relative border rounded shrink-0">
+                <Image 
+                  src={product.images?.[0] || logo} 
+                  alt={product.name} 
+                  fill 
+                  className="object-contain p-1" 
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-sm truncate">{product.name}</h4>
+                <p className="text-xs text-gray-500">₹{product.price}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={(e) => handleToggleFavorite(e, product._id)} 
+                  className={`p-1 ${isFav ? "text-[#DA0428]" : "text-gray-300"}`}
+                >
+                  <Heart size={20} fill={isFav ? "currentColor" : "none"} />
+                </button>
+                <button 
+                  onClick={(e) => handleAddToCart(e, product._id, 1)} 
+                  className="bg-[#7F5B98] text-white p-2 rounded-lg active:scale-95 transition-transform"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+            </div>
+          );
+        })
+      ) : (
+        <div className="text-center py-20 text-gray-400">No results found</div>
+      )}
+    </div>
+  </div>
+)}
       {/* --- MOBILE BOTTOM NAVIGATION --- */}
       <div className="sm:hidden fixed bottom-0 left-0 w-full bg-white border-t z-[2500] flex items-center justify-around py-3 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onClick={() => { setSearchQuery(""); setShowSearchDropdown(true); }} className="flex flex-col items-center gap-1 text-gray-500">

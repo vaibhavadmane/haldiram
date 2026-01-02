@@ -18,10 +18,12 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:3000/api/admin/orders");
+        // FIXED: Removed http://localhost:3000 to work on deployed server
+        const res = await fetch("/api/admin/orders");
         const data = await res.json();
         setOrders(Array.isArray(data) ? data : data.orders || []);
       } catch (err) {
+        console.error("Fetch error:", err);
         setOrders([]);
       } finally {
         setLoading(false);
@@ -33,15 +35,19 @@ export default function OrdersPage() {
   const updateStatus = async (orderId: string, status: string) => {
     setUpdatingId(orderId);
     try {
-      await fetch("http://localhost:3000/api/admin/orders/update-status", {
+      // FIXED: Removed http://localhost:3000 to work on deployed server
+      const res = await fetch("/api/admin/orders/update-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId, status }),
       });
+
+      if (!res.ok) throw new Error("Failed to update");
+
       setOrders(prev => prev.map(o => (o._id === orderId ? { ...o, status } : o)));
-      toast.success(`Order marked as ${status.toUpperCase()}`); //
+      toast.success(`Order marked as ${status.toUpperCase()}`);
     } catch (err) {
-      toast.error("Status update failed."); //
+      toast.error("Status update failed.");
     } finally {
       setUpdatingId(null);
     }
@@ -101,7 +107,7 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:gap-10">
-            {filteredOrders.map(order => (
+            {filteredOrders.length > 0 ? filteredOrders.map(order => (
               <div key={order._id} className="group relative bg-white rounded-3xl md:rounded-[3rem] border border-slate-100 shadow-sm transition-all duration-500 overflow-hidden">
                 
                 {/* CARD HEADER */}
@@ -121,7 +127,7 @@ export default function OrdersPage() {
                   <div className="flex items-center justify-between w-full md:w-auto gap-4">
                     <div className="text-left md:text-right">
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue</span>
-                      <p className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter">₹{order.totalAmount.toLocaleString()}</p>
+                      <p className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter">₹{order.totalAmount?.toLocaleString()}</p>
                     </div>
                     <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-300 group-hover:text-indigo-600 transition-all">
                       <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5" />
@@ -207,7 +213,11 @@ export default function OrdersPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center py-20 bg-white rounded-3xl border border-slate-100">
+                <p className="text-slate-400 font-bold">No orders found.</p>
+              </div>
+            )}
           </div>
         )}
       </div>

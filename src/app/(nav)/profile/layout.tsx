@@ -16,17 +16,22 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
-      <div className="container mx-auto px-4 pt-10">
+      <div className="container mx-auto px-4 pt-6 md:pt-10">
+        
         {/* Navigation Bar */}
-        <nav className="bg-white shadow-sm border rounded-sm flex items-center px-10 h-[55px] mb-8">
-          <ul className="flex gap-12 h-full items-center">
+        <nav className="bg-white shadow-sm border rounded-sm mb-8 overflow-hidden">
+          {/* - flex-nowrap + overflow-x-auto allows horizontal swiping on mobile
+            - md:px-10 and md:justify-start for desktop alignment
+            - scrollbar-hide (optional utility) or standard scroll behavior
+          */}
+          <ul className="flex items-center gap-6 md:gap-12 h-[55px] px-4 md:px-10 overflow-x-auto no-scrollbar scroll-smooth">
             {navItems.map((item) => {
               const isActive = pathname === item.path;
               return (
-                <li key={item.path} className="h-full flex flex-col justify-center relative">
+                <li key={item.path} className="h-full flex flex-col justify-center relative flex-shrink-0">
                   <Link
                     href={item.path}
-                    className={`text-[18px] font-medium tracking-wide transition-colors ${
+                    className={`text-[14px] md:text-[18px] font-medium tracking-wide transition-colors whitespace-nowrap ${
                       isActive ? 'text-red-600' : 'text-gray-500 hover:text-gray-800'
                     }`}
                   >
@@ -43,7 +48,7 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
         </nav>
 
         {/* Dynamic Content */}
-        <main>{children}</main>
+        <main className="w-full">{children}</main>
       </div>
     </div>
   );

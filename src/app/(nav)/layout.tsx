@@ -40,7 +40,7 @@ export default function NavLayout({
       <main className="flex-grow">
         {children}
       </main>
-      <section className="px-6 md:px-20 bg-[#DA0428] mb-40">
+      <section className="px-6 md:px-20 md:bg-[#DA0428] mb-40">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4  relative top-15">
                 {categories.map((cat, index) => (
                   <div key={index} className="relative aspect-square group cursor-pointer overflow-hidden shadow-sm">
