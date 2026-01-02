@@ -5,6 +5,7 @@ import { Info, Loader2, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -105,7 +106,7 @@ const CheckoutPage = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-[22px] font-serif text-[#801020]">Shipping Information</h2>
               <button className="text-[#DA0428] text-[11px] font-bold flex items-center gap-1 hover:underline">
-                <Edit3 size={12} /> <span className="border-b border-[#DA0428]">Add/Edit</span>
+                 <Link href='/profile'> <Edit3 size={12} /> <span className="border-b border-[#DA0428]">Add/Edit</span></Link>
               </button>
             </div>
             {userData && (
